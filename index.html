@@ -1580,8 +1580,10 @@
         </div>
 
         <div class="form-group">
-          <label class="mini-label">従業員番号<span class="required">*</span></label>
-          <input id="moveInEmployeeId" class="input" type="text" placeholder="例：EMP-001" />
+          <label class="mini-label">入寮する社員<span class="required">*</span></label>
+          <select id="moveInEmployeeId" class="select">
+            <option value="">社員一覧を読み込み中...</option>
+          </select>
         </div>
 
         <div class="form-group">
@@ -2535,14 +2537,58 @@
       }
     }
 
-    function openDormMoveInModal(dormId, propertyName, roomNumber) {
+    async function openDormMoveInModal(dormId, propertyName, roomNumber) {
       document.getElementById('moveInDormId').value = dormId;
       document.getElementById('moveInDormName').value = `${propertyName} ${roomNumber}`;
-      document.getElementById('moveInEmployeeId').value = '';
       document.getElementById('moveInDate').value = todayInputDate();
       document.getElementById('moveInNote').value = '';
 
       document.getElementById('dormMoveInModalBackdrop').classList.add('show');
+
+      await loadMoveInEmployeeOptions();
+    }
+
+    async function loadMoveInEmployeeOptions() {
+      const select = document.getElementById('moveInEmployeeId');
+
+      select.innerHTML = '<option value="">社員一覧を読み込み中...</option>';
+
+      try {
+        const result = await api('searchEmployees', {
+          name: '',
+          status: 'すべて',
+          company: '',
+          department: ''
+        });
+
+        if (!result.success) {
+          select.innerHTML = '<option value="">社員一覧の取得に失敗しました</option>';
+          toast(result.message || '社員一覧の取得に失敗しました。');
+          return;
+        }
+
+        const rows = (result.data || []).filter(row => {
+          const status = String(row.status || '').trim();
+          return row.type === '自社' &&
+            (status === '在籍' || status === '有効' || status === '');
+        });
+
+        if (!rows.length) {
+          select.innerHTML = '<option value="">在籍中の自社社員が見つかりません</option>';
+          return;
+        }
+
+        select.innerHTML = '<option value="">選択してください</option>' +
+          rows.map(row => {
+            const label = `${row.employeeId} - ${row.name}`;
+            return `<option value="${escapeAttr(row.employeeId)}">${escapeHtml(label)}</option>`;
+          }).join('');
+
+      } catch (err) {
+        console.error(err);
+        select.innerHTML = '<option value="">社員一覧の取得に失敗しました</option>';
+        toast('社員一覧取得で通信エラーが発生しました。');
+      }
     }
 
     function closeDormMoveInModal() {
@@ -2563,7 +2609,7 @@
       }
 
       if (!payload.employeeId) {
-        toast('従業員番号を入力してください。');
+        toast('入寮する社員を選択してください。');
         return;
       }
 
@@ -2573,7 +2619,8 @@
       }
 
       const dormName = document.getElementById('moveInDormName').value;
-      const ok = confirm(`${payload.employeeId} を ${dormName} に入寮処理します。\nよろしいですか？`);
+      const selectedText = document.getElementById('moveInEmployeeId').selectedOptions[0]?.textContent || payload.employeeId;
+      const ok = confirm(`${selectedText} を ${dormName} に入寮処理します。\nよろしいですか？`);
       if (!ok) return;
 
       showLoading();
