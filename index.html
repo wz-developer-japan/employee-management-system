@@ -135,6 +135,12 @@
       white-space: nowrap;
     }
 
+    .btn-sm {
+      padding: 7px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+    }
+
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-primary:hover { background: var(--primary-dark); }
 
@@ -413,6 +419,14 @@
       margin-bottom: 18px;
     }
 
+    .paid-search-grid {
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) auto auto;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+
     .form-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -477,6 +491,7 @@
     .badge-warning { background: #fff7e0; color: #b06000; }
     .badge-danger { background: #fde8e6; color: #b3261e; }
     .badge-gray { background: #f3f4f6; color: #4b5563; }
+    .badge-blue { background: #eaf2ff; color: #0057c8; }
 
     .empty {
       color: var(--muted);
@@ -610,6 +625,7 @@
     }
 
     .modal.small { max-width: 520px; }
+    .modal.large { max-width: 980px; }
 
     .modal-header {
       height: 68px;
@@ -705,7 +721,7 @@
 
       .stat-value { font-size: 24px; }
 
-      .search-grid, .form-grid { grid-template-columns: 1fr; }
+      .search-grid, .form-grid, .paid-search-grid { grid-template-columns: 1fr; }
 
       .section-card { padding: 14px; }
 
@@ -771,7 +787,6 @@
       </div>
 
       <button class="btn btn-primary btn-full" onclick="login()">ログイン</button>
-
       <div id="loginMessage" class="login-message"></div>
 
       <div class="demo-note">
@@ -790,7 +805,7 @@
       <nav class="nav">
         <button id="navTop" class="nav-item active" onclick="showSection('top')"><span>🏠</span>TOP</button>
         <button id="navSearch" class="nav-item" onclick="showSection('top', true)"><span>🔍</span>従業員検索</button>
-        <button class="nav-item" onclick="showComingSoon('有給管理')"><span>📅</span>有給管理</button>
+        <button id="navPaidLeave" class="nav-item" onclick="showSection('paidLeave')"><span>📅</span>有給管理</button>
         <button id="navPartnerRegister" class="nav-item" onclick="showSection('partnerRegister')"><span>👥</span>協力従業員登録</button>
         <button class="nav-item" onclick="showComingSoon('給与口座閲覧')"><span>🏦</span>給与口座閲覧</button>
         <button class="nav-item" onclick="showComingSoon('前借り記録')"><span>💴</span>前借り記録</button>
@@ -818,10 +833,7 @@
         <section id="topSection">
           <section class="stats-grid">
             <div class="card stat-card">
-              <div class="card-title">
-                <span>現在在籍者数</span>
-                <span>👥</span>
-              </div>
+              <div class="card-title"><span>現在在籍者数</span><span>👥</span></div>
               <div class="stat-row">
                 <div class="stat-item">
                   <div class="stat-label">自社</div>
@@ -839,10 +851,7 @@
             </div>
 
             <div class="card stat-card">
-              <div class="card-title teal">
-                <span>寮管理</span>
-                <span>🏢</span>
-              </div>
+              <div class="card-title teal"><span>寮管理</span><span>🏢</span></div>
               <div class="stat-row">
                 <div class="stat-item">
                   <div class="stat-label">管理中</div>
@@ -860,10 +869,7 @@
             </div>
 
             <div class="card stat-card">
-              <div class="card-title orange">
-                <span>有休アラート</span>
-                <span>🔔</span>
-              </div>
+              <div class="card-title orange"><span>有休アラート</span><span>🔔</span></div>
               <div class="stat-row two">
                 <div class="stat-item">
                   <div class="stat-label">付与予定</div>
@@ -877,10 +883,7 @@
             </div>
 
             <div class="card stat-card">
-              <div class="card-title purple">
-                <span>前借りメモ</span>
-                <span>🧾</span>
-              </div>
+              <div class="card-title purple"><span>前借りメモ</span><span>🧾</span></div>
               <div class="stat-row two">
                 <div class="stat-item">
                   <div class="stat-label">今月控除対象</div>
@@ -944,9 +947,7 @@
                       </tr>
                     </thead>
                     <tbody id="employeeResultBody">
-                      <tr>
-                        <td colspan="7" class="empty">検索すると結果が表示されます。</td>
-                      </tr>
+                      <tr><td colspan="7" class="empty">検索すると結果が表示されます。</td></tr>
                     </tbody>
                   </table>
                 </div>
@@ -966,9 +967,7 @@
                       </tr>
                     </thead>
                     <tbody id="paidLeaveMiniBody">
-                      <tr>
-                        <td colspan="3" class="empty">従業員詳細で確認できます。</td>
-                      </tr>
+                      <tr><td colspan="3" class="empty">従業員詳細で確認できます。</td></tr>
                     </tbody>
                   </table>
                 </div>
@@ -991,12 +990,52 @@
                   </div>
                 </div>
 
-                <button class="btn btn-outline btn-full" onclick="showComingSoon('寮管理')">
-                  寮管理画面へ
-                </button>
+                <button class="btn btn-outline btn-full" onclick="showComingSoon('寮管理')">寮管理画面へ</button>
               </div>
             </div>
           </section>
+        </section>
+
+        <section id="paidLeaveSection" class="hidden">
+          <div class="card section-card">
+            <h2 class="section-title">📅 有休管理一覧</h2>
+
+            <div class="form-note">
+              自社社員の有休残数、次回付与、消滅予定を一覧表示します。  
+              30日以内に消滅予定がある場合は警告表示します。
+            </div>
+
+            <div class="paid-search-grid">
+              <div>
+                <label class="mini-label">氏名・カナ・従業員番号・配属先</label>
+                <input id="paidLeaveKeyword" class="input" type="text" placeholder="例：山田 / EMP / ETCH" />
+              </div>
+              <button class="btn btn-primary" onclick="loadPaidLeaveList()">検索</button>
+              <button class="btn btn-outline" onclick="clearPaidLeaveSearch()">クリア</button>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>従業員番号</th>
+                    <th>氏名</th>
+                    <th>配属先</th>
+                    <th>ステータス</th>
+                    <th>有休残数</th>
+                    <th>次回付与日</th>
+                    <th>次回付与数</th>
+                    <th>次回消滅日</th>
+                    <th>消滅日数</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="paidLeaveListBody">
+                  <tr><td colspan="10" class="empty">読み込み待ちです。</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </section>
 
         <section id="partnerRegisterSection" class="hidden">
@@ -1087,7 +1126,7 @@
         <span class="bottom-icon">🔍</span>
         <span>検索</span>
       </button>
-      <button class="bottom-item" onclick="showComingSoon('有給管理')">
+      <button class="bottom-item" onclick="showSection('paidLeave')">
         <span class="bottom-icon">📅</span>
         <span>有給</span>
       </button>
@@ -1298,6 +1337,37 @@
     </div>
   </div>
 
+  <div id="paidLeaveHistoryModalBackdrop" class="modal-backdrop">
+    <div class="modal large">
+      <div class="modal-header">
+        <div class="modal-title" id="paidLeaveHistoryTitle">有休取得履歴</div>
+        <button class="close-btn" onclick="closePaidLeaveHistoryModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>取得日</th>
+                <th>氏名</th>
+                <th>種別</th>
+                <th>使用日数</th>
+                <th>消化付与ID</th>
+                <th>登録者</th>
+                <th>登録日時</th>
+                <th>備考</th>
+              </tr>
+            </thead>
+            <tbody id="paidLeaveHistoryBody">
+              <tr><td colspan="8" class="empty">履歴を読み込み中です。</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="loading" class="loading">読み込み中...</div>
   <div id="toast" class="toast"></div>
 
@@ -1309,6 +1379,7 @@
 
     let currentUser = null;
     let currentDetailEmployee = null;
+    let currentPaidLeaveEmployee = null;
 
     let masterData = {
       companies: [],
@@ -1358,9 +1429,7 @@
 
       const response = await fetch(GAS_API_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'text/plain;charset=utf-8'
-        },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(body)
       });
 
@@ -1517,14 +1586,10 @@
       const departments = masterData.departments || [];
 
       const companyOptions = '<option value="">選択してください</option>' +
-        partnerCompanies.map(company => {
-          return `<option value="${escapeAttr(company.companyName)}">${escapeHtml(company.companyName)}</option>`;
-        }).join('');
+        partnerCompanies.map(company => `<option value="${escapeAttr(company.companyName)}">${escapeHtml(company.companyName)}</option>`).join('');
 
       const departmentOptions = '<option value="">選択してください</option>' +
-        departments.map(dept => {
-          return `<option value="${escapeAttr(dept.departmentName)}">${escapeHtml(dept.departmentName)}</option>`;
-        }).join('');
+        departments.map(dept => `<option value="${escapeAttr(dept.departmentName)}">${escapeHtml(dept.departmentName)}</option>`).join('');
 
       companySelect.innerHTML = companyOptions;
       departmentSelect.innerHTML = departmentOptions;
@@ -1587,12 +1652,7 @@
       const department = document.getElementById('searchDepartment').value.trim();
 
       try {
-        const result = await api('searchEmployees', {
-          name,
-          status,
-          company,
-          department
-        });
+        const result = await api('searchEmployees', { name, status, company, department });
 
         if (!result.success) {
           toast(result.message || '従業員検索に失敗しました。');
@@ -1613,11 +1673,7 @@
       const tbody = document.getElementById('employeeResultBody');
 
       if (!rows.length) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="7" class="empty">該当する従業員が見つかりません。</td>
-          </tr>
-        `;
+        tbody.innerHTML = `<tr><td colspan="7" class="empty">該当する従業員が見つかりません。</td></tr>`;
         return;
       }
 
@@ -1642,10 +1698,7 @@
       showLoading();
 
       try {
-        const result = await api('getEmployeeDetail', {
-          employeeId,
-          source
-        });
+        const result = await api('getEmployeeDetail', { employeeId, source });
 
         if (!result.success) {
           toast(result.message || '従業員詳細の取得に失敗しました。');
@@ -1717,6 +1770,7 @@
         ? `
           <div class="drawer-actions">
             <button class="btn btn-primary btn-full" onclick="openPaidLeaveModal()">📅 有給休暇登録</button>
+            <button class="btn btn-outline btn-full" onclick="loadPaidLeaveHistory('${escapeAttr(data.employeeId)}', '${escapeAttr(data.name)}')">📋 有休取得履歴</button>
             <button class="btn btn-outline btn-full" onclick="showComingSoon('前借り記録')">💴 前借り記録</button>
             <button class="btn btn-outline btn-full" onclick="showComingSoon('寮管理')">🏢 寮情報を見る</button>
           </div>
@@ -1778,6 +1832,130 @@
           <div class="detail-value">${escapeHtml(value === null || value === undefined || value === '' ? '—' : value)}</div>
         </div>
       `;
+    }
+
+    async function loadPaidLeaveList() {
+      showLoading();
+
+      const keyword = document.getElementById('paidLeaveKeyword').value.trim();
+
+      try {
+        const result = await api('getPaidLeaveList', { keyword, onlyActive: 'true' });
+
+        if (!result.success) {
+          toast(result.message || '有休管理一覧の取得に失敗しました。');
+          return;
+        }
+
+        renderPaidLeaveList(result.data || []);
+
+      } catch (err) {
+        console.error(err);
+        toast('有休管理一覧で通信エラーが発生しました。');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function renderPaidLeaveList(rows) {
+      const tbody = document.getElementById('paidLeaveListBody');
+
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="10" class="empty">該当する社員が見つかりません。</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = rows.map(row => {
+        const remain = Number(row.totalRemain || 0);
+        const remainBadge = remain <= 0
+          ? 'badge-danger'
+          : remain <= 3
+            ? 'badge-warning'
+            : 'badge-success';
+
+        const expireHtml = row.expireSoon
+          ? `<span class="badge badge-danger">${escapeHtml(row.nextExpireDate || '-')}</span>`
+          : escapeHtml(row.nextExpireDate || '-');
+
+        const targetHtml = row.target
+          ? `<span class="badge badge-success">対象</span>`
+          : `<span class="badge badge-gray">対象外</span>`;
+
+        return `
+          <tr>
+            <td>${escapeHtml(row.employeeId)}</td>
+            <td>${escapeHtml(row.name)}<br>${targetHtml}</td>
+            <td>${escapeHtml(row.department || '')}</td>
+            <td><span class="badge ${getStatusClass(row.status)}">${escapeHtml(row.status || '-')}</span></td>
+            <td><span class="badge ${remainBadge}">${escapeHtml(row.totalRemain || 0)}日</span></td>
+            <td>${escapeHtml(row.nextGrantDate || '-')}</td>
+            <td>${row.nextGrantDays !== '' ? escapeHtml(row.nextGrantDays) + '日' : '-'}</td>
+            <td>${expireHtml}</td>
+            <td>${row.nextExpireDays !== '' ? escapeHtml(row.nextExpireDays) + '日' : '-'}</td>
+            <td>
+              <button class="btn btn-sm btn-primary" onclick="openPaidLeaveModalFromList('${escapeAttr(row.employeeId)}', '${escapeAttr(row.name)}', '${escapeAttr(row.totalRemain)}')">登録</button>
+              <button class="btn btn-sm btn-outline" onclick="loadPaidLeaveHistory('${escapeAttr(row.employeeId)}', '${escapeAttr(row.name)}')">履歴</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function clearPaidLeaveSearch() {
+      document.getElementById('paidLeaveKeyword').value = '';
+      loadPaidLeaveList();
+    }
+
+    async function loadPaidLeaveHistory(employeeId, name) {
+      showLoading();
+
+      try {
+        const result = await api('getPaidLeaveHistory', { employeeId });
+
+        if (!result.success) {
+          toast(result.message || '有休取得履歴の取得に失敗しました。');
+          return;
+        }
+
+        renderPaidLeaveHistory(result.data || [], name);
+        document.getElementById('paidLeaveHistoryModalBackdrop').classList.add('show');
+
+      } catch (err) {
+        console.error(err);
+        toast('有休取得履歴で通信エラーが発生しました。');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function renderPaidLeaveHistory(rows, name) {
+      document.getElementById('paidLeaveHistoryTitle').textContent = `有休取得履歴：${name || ''}`;
+
+      const tbody = document.getElementById('paidLeaveHistoryBody');
+
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="empty">有休取得履歴はありません。</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = rows.map(row => {
+        return `
+          <tr>
+            <td>${escapeHtml(row.leaveDate || '')}</td>
+            <td>${escapeHtml(row.name || '')}</td>
+            <td>${escapeHtml(row.leaveType || '')}</td>
+            <td>${escapeHtml(row.useDays || '')}日</td>
+            <td>${escapeHtml(row.grantId || '')}</td>
+            <td>${escapeHtml(row.registeredBy || '')}</td>
+            <td>${escapeHtml(row.registeredAt || '')}</td>
+            <td>${escapeHtml(row.note || '')}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function closePaidLeaveHistoryModal() {
+      document.getElementById('paidLeaveHistoryModalBackdrop').classList.remove('show');
     }
 
     async function registerPartnerEmployee() {
@@ -1865,14 +2043,36 @@
       const data = currentDetailEmployee;
       const paid = data.paidLeave || {};
 
+      currentPaidLeaveEmployee = {
+        employeeId: data.employeeId,
+        name: data.name,
+        remain: paid.totalRemain || 0,
+        source: 'detail'
+      };
+
+      setPaidLeaveModalValues(currentPaidLeaveEmployee);
+      document.getElementById('paidLeaveModalBackdrop').classList.add('show');
+    }
+
+    function openPaidLeaveModalFromList(employeeId, name, remain) {
+      currentPaidLeaveEmployee = {
+        employeeId,
+        name,
+        remain,
+        source: 'list'
+      };
+
+      setPaidLeaveModalValues(currentPaidLeaveEmployee);
+      document.getElementById('paidLeaveModalBackdrop').classList.add('show');
+    }
+
+    function setPaidLeaveModalValues(data) {
       document.getElementById('paidLeaveEmployeeId').value = data.employeeId || '';
       document.getElementById('paidLeaveEmployeeName').value = `${data.name || ''}（${data.employeeId || ''}）`;
-      document.getElementById('paidLeaveCurrentRemain').value = `${paid.totalRemain || 0}日`;
+      document.getElementById('paidLeaveCurrentRemain').value = `${data.remain || 0}日`;
       document.getElementById('paidLeaveDate').value = todayInputDate();
       document.getElementById('paidLeaveType').value = '全日';
       document.getElementById('paidLeaveNote').value = '';
-
-      document.getElementById('paidLeaveModalBackdrop').classList.add('show');
     }
 
     function closePaidLeaveModal() {
@@ -1902,7 +2102,7 @@
         return;
       }
 
-      const name = currentDetailEmployee ? currentDetailEmployee.name : payload.employeeId;
+      const name = currentPaidLeaveEmployee ? currentPaidLeaveEmployee.name : payload.employeeId;
       const ok = confirm(`${name} の有休を登録します。\n取得日：${payload.leaveDate}\n種別：${payload.leaveType}\nよろしいですか？`);
       if (!ok) return;
 
@@ -1921,7 +2121,11 @@
 
         await loadDashboard();
         await searchEmployees();
-        await openEmployeeDetail(payload.employeeId, 'self');
+        await loadPaidLeaveList();
+
+        if (currentPaidLeaveEmployee && currentPaidLeaveEmployee.source === 'detail') {
+          await openEmployeeDetail(payload.employeeId, 'self');
+        }
 
       } catch (err) {
         console.error(err);
@@ -2121,9 +2325,11 @@
 
       const topSection = document.getElementById('topSection');
       const partnerRegisterSection = document.getElementById('partnerRegisterSection');
+      const paidLeaveSection = document.getElementById('paidLeaveSection');
 
       topSection.classList.add('hidden');
       partnerRegisterSection.classList.add('hidden');
+      paidLeaveSection.classList.add('hidden');
 
       document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
 
@@ -2135,16 +2341,22 @@
         return;
       }
 
+      if (sectionName === 'paidLeave') {
+        paidLeaveSection.classList.remove('hidden');
+        document.getElementById('pageTitle').textContent = '有休管理';
+        document.getElementById('navPaidLeave').classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        loadPaidLeaveList();
+        return;
+      }
+
       topSection.classList.remove('hidden');
       document.getElementById('pageTitle').textContent = 'TOP';
       document.getElementById('navTop').classList.add('active');
 
       if (focusSearch) {
         setTimeout(() => {
-          document.getElementById('employeeSearchCard').scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
+          document.getElementById('employeeSearchCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
           document.getElementById('searchName').focus();
         }, 100);
       } else {
