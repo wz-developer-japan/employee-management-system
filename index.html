@@ -152,6 +152,15 @@
 
     .btn-outline:hover { background: var(--primary-light); }
 
+    .btn-teal {
+      background: var(--teal);
+      color: #fff;
+    }
+
+    .btn-teal:hover {
+      background: #006f6f;
+    }
+
     .btn-orange {
       background: var(--orange);
       color: #fff;
@@ -428,9 +437,10 @@
       margin-bottom: 18px;
     }
 
-    .paid-search-grid {
+    .paid-search-grid,
+    .dorm-search-grid {
       display: grid;
-      grid-template-columns: minmax(240px, 1fr) auto auto auto;
+      grid-template-columns: minmax(240px, 1fr) 180px auto auto auto;
       gap: 12px;
       align-items: end;
       margin-bottom: 18px;
@@ -501,6 +511,7 @@
     .badge-danger { background: #fde8e6; color: #b3261e; }
     .badge-gray { background: #f3f4f6; color: #4b5563; }
     .badge-blue { background: #eaf2ff; color: #0057c8; }
+    .badge-teal { background: #e6f7f7; color: #007070; }
 
     .empty {
       color: var(--muted);
@@ -692,6 +703,7 @@
       .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .dashboard-layout { grid-template-columns: 1fr; }
       .search-grid { grid-template-columns: 1fr 1fr; }
+      .paid-search-grid, .dorm-search-grid { grid-template-columns: 1fr 1fr; }
     }
 
     @media (max-width: 820px) {
@@ -730,7 +742,7 @@
 
       .stat-value { font-size: 24px; }
 
-      .search-grid, .form-grid, .paid-search-grid { grid-template-columns: 1fr; }
+      .search-grid, .form-grid, .paid-search-grid, .dorm-search-grid { grid-template-columns: 1fr; }
 
       .section-card { padding: 14px; }
 
@@ -818,7 +830,7 @@
         <button id="navPartnerRegister" class="nav-item" onclick="showSection('partnerRegister')"><span>👥</span>協力従業員登録</button>
         <button class="nav-item" onclick="showComingSoon('給与口座閲覧')"><span>🏦</span>給与口座閲覧</button>
         <button class="nav-item" onclick="showComingSoon('前借り記録')"><span>💴</span>前借り記録</button>
-        <button class="nav-item" onclick="showComingSoon('寮管理')"><span>🏢</span>寮管理</button>
+        <button id="navDorm" class="nav-item" onclick="showSection('dorm')"><span>🏢</span>寮管理</button>
         <button class="nav-item" onclick="showComingSoon('マスタ管理')"><span>⚙️</span>マスタ管理</button>
         <button class="nav-item" onclick="showComingSoon('操作ログ')"><span>📋</span>操作ログ</button>
       </nav>
@@ -999,7 +1011,7 @@
                   </div>
                 </div>
 
-                <button class="btn btn-outline btn-full" onclick="showComingSoon('寮管理')">寮管理画面へ</button>
+                <button class="btn btn-outline btn-full" onclick="showSection('dorm')">寮管理画面へ</button>
               </div>
             </div>
           </section>
@@ -1042,6 +1054,62 @@
                 </thead>
                 <tbody id="paidLeaveListBody">
                   <tr><td colspan="10" class="empty">読み込み待ちです。</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section id="dormSection" class="hidden">
+          <div class="card section-card">
+            <h2 class="section-title">🏢 寮管理</h2>
+
+            <div class="form-note">
+              自社社員向けの借上げ寮を管理します。  
+              寮登録、入寮処理、退寮処理、入退寮履歴の確認ができます。
+            </div>
+
+            <div class="dorm-search-grid">
+              <div>
+                <label class="mini-label">物件名・部屋番号・住所・入居者</label>
+                <input id="dormKeyword" class="input" type="text" placeholder="例：グレイス / 101 / 山田" />
+              </div>
+
+              <div>
+                <label class="mini-label">ステータス</label>
+                <select id="dormStatus" class="select">
+                  <option value="すべて">すべて</option>
+                  <option value="使用中">使用中</option>
+                  <option value="空室">空室</option>
+                  <option value="準備中">準備中</option>
+                  <option value="解約済">解約済</option>
+                </select>
+              </div>
+
+              <button class="btn btn-primary" onclick="loadDormList()">検索</button>
+              <button class="btn btn-outline" onclick="clearDormSearch()">クリア</button>
+              <button class="btn btn-teal" onclick="openDormRegisterModal()">寮を登録</button>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>寮ID</th>
+                    <th>物件名</th>
+                    <th>部屋</th>
+                    <th>区分</th>
+                    <th>ステータス</th>
+                    <th>寮費</th>
+                    <th>家賃支払額</th>
+                    <th>会社負担</th>
+                    <th>現在入居者</th>
+                    <th>入居開始日</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="dormListBody">
+                  <tr><td colspan="11" class="empty">読み込み待ちです。</td></tr>
                 </tbody>
               </table>
             </div>
@@ -1140,7 +1208,7 @@
         <span class="bottom-icon">📅</span>
         <span>有給</span>
       </button>
-      <button class="bottom-item" onclick="showComingSoon('寮管理')">
+      <button class="bottom-item" onclick="showSection('dorm')">
         <span class="bottom-icon">🏢</span>
         <span>寮</span>
       </button>
@@ -1419,6 +1487,187 @@
             </thead>
             <tbody id="grantResultSkippedBody">
               <tr><td colspan="3" class="empty">スキップデータはありません。</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="dormRegisterModalBackdrop" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">寮登録</div>
+        <button class="close-btn" onclick="closeDormRegisterModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+          <div>
+            <label class="mini-label">物件名<span class="required">*</span></label>
+            <input id="dormRegisterPropertyName" class="input" type="text" placeholder="例：グレイスタウンMIWA" />
+          </div>
+
+          <div>
+            <label class="mini-label">部屋番号<span class="required">*</span></label>
+            <input id="dormRegisterRoomNumber" class="input" type="text" placeholder="例：101" />
+          </div>
+
+          <div>
+            <label class="mini-label">区分<span class="required">*</span></label>
+            <select id="dormRegisterType" class="select">
+              <option value="">選択してください</option>
+              <option value="単身">単身</option>
+              <option value="世帯">世帯</option>
+              <option value="男性寮">男性寮</option>
+              <option value="女性寮">女性寮</option>
+              <option value="その他">その他</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="mini-label">取得日<span class="required">*</span></label>
+            <input id="dormRegisterAcquisitionDate" class="input" type="date" />
+          </div>
+
+          <div>
+            <label class="mini-label">寮費</label>
+            <input id="dormRegisterDormFee" class="input" type="number" placeholder="例：30000" />
+          </div>
+
+          <div>
+            <label class="mini-label">家賃支払額</label>
+            <input id="dormRegisterRentAmount" class="input" type="number" placeholder="例：52000" />
+          </div>
+
+          <div class="full">
+            <label class="mini-label">住所<span class="required">*</span></label>
+            <input id="dormRegisterAddress" class="input" type="text" placeholder="例：愛知県〇〇市〇〇町1-2-3" />
+          </div>
+
+          <div class="full">
+            <label class="mini-label">備考</label>
+            <textarea id="dormRegisterNote" class="textarea" placeholder="必要に応じてメモを入力"></textarea>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button class="btn btn-outline" onclick="closeDormRegisterModal()">キャンセル</button>
+          <button class="btn btn-teal" onclick="registerDorm()">登録する</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="dormMoveInModalBackdrop" class="modal-backdrop">
+    <div class="modal small">
+      <div class="modal-header">
+        <div class="modal-title">入寮処理</div>
+        <button class="close-btn" onclick="closeDormMoveInModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <input id="moveInDormId" type="hidden" />
+
+        <div class="form-note">
+          自社社員を選択して入寮処理を行います。<br>
+          既に別の寮に入寮中の社員は登録できません。
+        </div>
+
+        <div class="form-group">
+          <label class="mini-label">対象寮</label>
+          <input id="moveInDormName" class="input" type="text" disabled />
+        </div>
+
+        <div class="form-group">
+          <label class="mini-label">従業員番号<span class="required">*</span></label>
+          <input id="moveInEmployeeId" class="input" type="text" placeholder="例：EMP-001" />
+        </div>
+
+        <div class="form-group">
+          <label class="mini-label">入寮日<span class="required">*</span></label>
+          <input id="moveInDate" class="input" type="date" />
+        </div>
+
+        <div class="form-group">
+          <label class="mini-label">備考</label>
+          <textarea id="moveInNote" class="textarea" placeholder="必要に応じてメモを入力"></textarea>
+        </div>
+
+        <div class="button-row">
+          <button class="btn btn-outline" onclick="closeDormMoveInModal()">キャンセル</button>
+          <button class="btn btn-teal" onclick="moveInDorm()">入寮処理する</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="dormMoveOutModalBackdrop" class="modal-backdrop">
+    <div class="modal small">
+      <div class="modal-header">
+        <div class="modal-title">退寮処理</div>
+        <button class="close-btn" onclick="closeDormMoveOutModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <input id="moveOutDormId" type="hidden" />
+
+        <div class="danger-note">
+          退寮処理を行うと、寮のステータスは「空室」になり、入退寮履歴は「退寮済」になります。
+        </div>
+
+        <div class="form-group">
+          <label class="mini-label">対象寮</label>
+          <input id="moveOutDormName" class="input" type="text" disabled />
+        </div>
+
+        <div class="form-group">
+          <label class="mini-label">現在入居者</label>
+          <input id="moveOutEmployeeName" class="input" type="text" disabled />
+        </div>
+
+        <div class="form-group">
+          <label class="mini-label">退寮日<span class="required">*</span></label>
+          <input id="moveOutDate" class="input" type="date" />
+        </div>
+
+        <div class="form-group">
+          <label class="mini-label">備考</label>
+          <textarea id="moveOutNote" class="textarea" placeholder="必要に応じて退寮メモを入力"></textarea>
+        </div>
+
+        <div class="button-row">
+          <button class="btn btn-outline" onclick="closeDormMoveOutModal()">キャンセル</button>
+          <button class="btn btn-danger" onclick="moveOutDorm()">退寮処理する</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="dormHistoryModalBackdrop" class="modal-backdrop">
+    <div class="modal large">
+      <div class="modal-header">
+        <div class="modal-title" id="dormHistoryTitle">入退寮履歴</div>
+        <button class="close-btn" onclick="closeDormHistoryModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>物件名</th>
+                <th>部屋</th>
+                <th>従業員番号</th>
+                <th>氏名</th>
+                <th>入寮日</th>
+                <th>退寮日</th>
+                <th>ステータス</th>
+                <th>備考</th>
+              </tr>
+            </thead>
+            <tbody id="dormHistoryBody">
+              <tr><td colspan="8" class="empty">履歴を読み込み中です。</td></tr>
             </tbody>
           </table>
         </div>
@@ -1831,7 +2080,7 @@
             <button class="btn btn-orange btn-full" onclick="grantPaidLeaveForEmployee('${escapeAttr(data.employeeId)}', '${escapeAttr(data.name)}')">🎁 有休を付与</button>
             <button class="btn btn-outline btn-full" onclick="loadPaidLeaveHistory('${escapeAttr(data.employeeId)}', '${escapeAttr(data.name)}')">📋 有休取得履歴</button>
             <button class="btn btn-outline btn-full" onclick="showComingSoon('前借り記録')">💴 前借り記録</button>
-            <button class="btn btn-outline btn-full" onclick="showComingSoon('寮管理')">🏢 寮情報を見る</button>
+            <button class="btn btn-teal btn-full" onclick="showSection('dorm')">🏢 寮管理画面へ</button>
           </div>
         `
         : `
@@ -2135,6 +2384,332 @@
 
     function closePaidLeaveHistoryModal() {
       document.getElementById('paidLeaveHistoryModalBackdrop').classList.remove('show');
+    }
+
+    async function loadDormList() {
+      showLoading();
+
+      const keyword = document.getElementById('dormKeyword').value.trim();
+      const status = document.getElementById('dormStatus').value;
+
+      try {
+        const result = await api('getDormList', { keyword, status });
+
+        if (!result.success) {
+          toast(result.message || '寮一覧の取得に失敗しました。');
+          return;
+        }
+
+        renderDormList(result.data || []);
+
+      } catch (err) {
+        console.error(err);
+        toast('寮一覧で通信エラーが発生しました。');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function renderDormList(rows) {
+      const tbody = document.getElementById('dormListBody');
+
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="11" class="empty">該当する寮が見つかりません。</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = rows.map(row => {
+        const statusClass = getDormStatusClass(row.status);
+
+        const moveButton = row.status === '使用中'
+          ? `<button class="btn btn-sm btn-danger-outline" onclick="openDormMoveOutModal('${escapeAttr(row.dormId)}', '${escapeAttr(row.propertyName)}', '${escapeAttr(row.roomNumber)}', '${escapeAttr(row.currentEmployeeName)}')">退寮</button>`
+          : row.status === '空室' || row.status === '準備中'
+            ? `<button class="btn btn-sm btn-teal" onclick="openDormMoveInModal('${escapeAttr(row.dormId)}', '${escapeAttr(row.propertyName)}', '${escapeAttr(row.roomNumber)}')">入寮</button>`
+            : '';
+
+        return `
+          <tr>
+            <td>${escapeHtml(row.dormId)}</td>
+            <td>${escapeHtml(row.propertyName)}<br><span style="color:#6b7280; font-size:12px;">${escapeHtml(row.address || '')}</span></td>
+            <td>${escapeHtml(row.roomNumber)}</td>
+            <td>${escapeHtml(row.type || '')}</td>
+            <td><span class="badge ${statusClass}">${escapeHtml(row.status || '-')}</span></td>
+            <td>${formatYen(row.dormFee || 0)}</td>
+            <td>${formatYen(row.rentAmount || 0)}</td>
+            <td>${formatYen(row.companyCost || 0)}</td>
+            <td>${escapeHtml(row.currentEmployeeName || '-')}</td>
+            <td>${escapeHtml(row.moveInDate || '-')}</td>
+            <td>
+              ${moveButton}
+              <button class="btn btn-sm btn-outline" onclick="loadDormHistory('${escapeAttr(row.dormId)}', '${escapeAttr(row.propertyName)} ${escapeAttr(row.roomNumber)}')">履歴</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function clearDormSearch() {
+      document.getElementById('dormKeyword').value = '';
+      document.getElementById('dormStatus').value = 'すべて';
+      loadDormList();
+    }
+
+    function openDormRegisterModal() {
+      document.getElementById('dormRegisterPropertyName').value = '';
+      document.getElementById('dormRegisterRoomNumber').value = '';
+      document.getElementById('dormRegisterType').value = '';
+      document.getElementById('dormRegisterDormFee').value = '';
+      document.getElementById('dormRegisterAddress').value = '';
+      document.getElementById('dormRegisterRentAmount').value = '';
+      document.getElementById('dormRegisterAcquisitionDate').value = todayInputDate();
+      document.getElementById('dormRegisterNote').value = '';
+
+      document.getElementById('dormRegisterModalBackdrop').classList.add('show');
+    }
+
+    function closeDormRegisterModal() {
+      document.getElementById('dormRegisterModalBackdrop').classList.remove('show');
+    }
+
+    async function registerDorm() {
+      const payload = {
+        propertyName: document.getElementById('dormRegisterPropertyName').value.trim(),
+        roomNumber: document.getElementById('dormRegisterRoomNumber').value.trim(),
+        type: document.getElementById('dormRegisterType').value.trim(),
+        dormFee: document.getElementById('dormRegisterDormFee').value.trim(),
+        address: document.getElementById('dormRegisterAddress').value.trim(),
+        rentAmount: document.getElementById('dormRegisterRentAmount').value.trim(),
+        acquisitionDate: document.getElementById('dormRegisterAcquisitionDate').value.trim(),
+        note: document.getElementById('dormRegisterNote').value.trim()
+      };
+
+      if (!payload.propertyName) {
+        toast('物件名を入力してください。');
+        return;
+      }
+
+      if (!payload.roomNumber) {
+        toast('部屋番号を入力してください。');
+        return;
+      }
+
+      if (!payload.type) {
+        toast('区分を選択してください。');
+        return;
+      }
+
+      if (!payload.address) {
+        toast('住所を入力してください。');
+        return;
+      }
+
+      if (!payload.acquisitionDate) {
+        toast('取得日を入力してください。');
+        return;
+      }
+
+      const ok = confirm(`寮「${payload.propertyName} ${payload.roomNumber}」を登録します。よろしいですか？`);
+      if (!ok) return;
+
+      showLoading();
+
+      try {
+        const result = await api('registerDorm', payload);
+
+        if (!result.success) {
+          toast(result.message || '寮登録に失敗しました。');
+          return;
+        }
+
+        toast(result.message || '寮を登録しました。');
+        closeDormRegisterModal();
+
+        await loadDashboard();
+        await loadDormList();
+
+      } catch (err) {
+        console.error(err);
+        toast('寮登録で通信エラーが発生しました。');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function openDormMoveInModal(dormId, propertyName, roomNumber) {
+      document.getElementById('moveInDormId').value = dormId;
+      document.getElementById('moveInDormName').value = `${propertyName} ${roomNumber}`;
+      document.getElementById('moveInEmployeeId').value = '';
+      document.getElementById('moveInDate').value = todayInputDate();
+      document.getElementById('moveInNote').value = '';
+
+      document.getElementById('dormMoveInModalBackdrop').classList.add('show');
+    }
+
+    function closeDormMoveInModal() {
+      document.getElementById('dormMoveInModalBackdrop').classList.remove('show');
+    }
+
+    async function moveInDorm() {
+      const payload = {
+        dormId: document.getElementById('moveInDormId').value.trim(),
+        employeeId: document.getElementById('moveInEmployeeId').value.trim(),
+        moveInDate: document.getElementById('moveInDate').value.trim(),
+        note: document.getElementById('moveInNote').value.trim()
+      };
+
+      if (!payload.dormId) {
+        toast('寮IDが取得できません。');
+        return;
+      }
+
+      if (!payload.employeeId) {
+        toast('従業員番号を入力してください。');
+        return;
+      }
+
+      if (!payload.moveInDate) {
+        toast('入寮日を入力してください。');
+        return;
+      }
+
+      const dormName = document.getElementById('moveInDormName').value;
+      const ok = confirm(`${payload.employeeId} を ${dormName} に入寮処理します。\nよろしいですか？`);
+      if (!ok) return;
+
+      showLoading();
+
+      try {
+        const result = await api('moveInDorm', payload);
+
+        if (!result.success) {
+          toast(result.message || '入寮処理に失敗しました。');
+          return;
+        }
+
+        toast(result.message || '入寮処理しました。');
+        closeDormMoveInModal();
+
+        await loadDashboard();
+        await loadDormList();
+        await searchEmployees();
+
+      } catch (err) {
+        console.error(err);
+        toast('入寮処理で通信エラーが発生しました。');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function openDormMoveOutModal(dormId, propertyName, roomNumber, currentEmployeeName) {
+      document.getElementById('moveOutDormId').value = dormId;
+      document.getElementById('moveOutDormName').value = `${propertyName} ${roomNumber}`;
+      document.getElementById('moveOutEmployeeName').value = currentEmployeeName || '';
+      document.getElementById('moveOutDate').value = todayInputDate();
+      document.getElementById('moveOutNote').value = '';
+
+      document.getElementById('dormMoveOutModalBackdrop').classList.add('show');
+    }
+
+    function closeDormMoveOutModal() {
+      document.getElementById('dormMoveOutModalBackdrop').classList.remove('show');
+    }
+
+    async function moveOutDorm() {
+      const payload = {
+        dormId: document.getElementById('moveOutDormId').value.trim(),
+        moveOutDate: document.getElementById('moveOutDate').value.trim(),
+        note: document.getElementById('moveOutNote').value.trim()
+      };
+
+      if (!payload.dormId) {
+        toast('寮IDが取得できません。');
+        return;
+      }
+
+      if (!payload.moveOutDate) {
+        toast('退寮日を入力してください。');
+        return;
+      }
+
+      const dormName = document.getElementById('moveOutDormName').value;
+      const employeeName = document.getElementById('moveOutEmployeeName').value;
+      const ok = confirm(`${employeeName} を ${dormName} から退寮処理します。\nよろしいですか？`);
+      if (!ok) return;
+
+      showLoading();
+
+      try {
+        const result = await api('moveOutDorm', payload);
+
+        if (!result.success) {
+          toast(result.message || '退寮処理に失敗しました。');
+          return;
+        }
+
+        toast(result.message || '退寮処理しました。');
+        closeDormMoveOutModal();
+
+        await loadDashboard();
+        await loadDormList();
+        await searchEmployees();
+
+      } catch (err) {
+        console.error(err);
+        toast('退寮処理で通信エラーが発生しました。');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    async function loadDormHistory(dormId, title) {
+      showLoading();
+
+      try {
+        const result = await api('getDormHistory', { dormId });
+
+        if (!result.success) {
+          toast(result.message || '入退寮履歴の取得に失敗しました。');
+          return;
+        }
+
+        renderDormHistory(result.data || [], title);
+        document.getElementById('dormHistoryModalBackdrop').classList.add('show');
+
+      } catch (err) {
+        console.error(err);
+        toast('入退寮履歴で通信エラーが発生しました。');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function renderDormHistory(rows, title) {
+      document.getElementById('dormHistoryTitle').textContent = `入退寮履歴：${title || ''}`;
+
+      const tbody = document.getElementById('dormHistoryBody');
+
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="empty">入退寮履歴はありません。</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = rows.map(row => `
+        <tr>
+          <td>${escapeHtml(row.propertyName || '')}</td>
+          <td>${escapeHtml(row.roomNumber || '')}</td>
+          <td>${escapeHtml(row.employeeId || '')}</td>
+          <td>${escapeHtml(row.name || '')}</td>
+          <td>${escapeHtml(row.moveInDate || '')}</td>
+          <td>${escapeHtml(row.moveOutDate || '')}</td>
+          <td><span class="badge ${getDormHistoryStatusClass(row.status)}">${escapeHtml(row.status || '')}</span></td>
+          <td>${escapeHtml(row.note || '')}</td>
+        </tr>
+      `).join('');
+    }
+
+    function closeDormHistoryModal() {
+      document.getElementById('dormHistoryModalBackdrop').classList.remove('show');
     }
 
     async function registerPartnerEmployee() {
@@ -2505,10 +3080,12 @@
       const topSection = document.getElementById('topSection');
       const partnerRegisterSection = document.getElementById('partnerRegisterSection');
       const paidLeaveSection = document.getElementById('paidLeaveSection');
+      const dormSection = document.getElementById('dormSection');
 
       topSection.classList.add('hidden');
       partnerRegisterSection.classList.add('hidden');
       paidLeaveSection.classList.add('hidden');
+      dormSection.classList.add('hidden');
 
       document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
 
@@ -2526,6 +3103,15 @@
         document.getElementById('navPaidLeave').classList.add('active');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         loadPaidLeaveList();
+        return;
+      }
+
+      if (sectionName === 'dorm') {
+        dormSection.classList.remove('hidden');
+        document.getElementById('pageTitle').textContent = '寮管理';
+        document.getElementById('navDorm').classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        loadDormList();
         return;
       }
 
@@ -2562,6 +3148,26 @@
       if (s === '在籍' || s === '有効') return 'badge-success';
       if (s === '休職中' || s === '準備中') return 'badge-warning';
       if (s === '離職' || s === '退職' || s === '停止') return 'badge-danger';
+
+      return 'badge-gray';
+    }
+
+    function getDormStatusClass(status) {
+      const s = String(status || '');
+
+      if (s === '使用中') return 'badge-success';
+      if (s === '空室') return 'badge-blue';
+      if (s === '準備中') return 'badge-warning';
+      if (s === '解約済') return 'badge-danger';
+
+      return 'badge-gray';
+    }
+
+    function getDormHistoryStatusClass(status) {
+      const s = String(status || '');
+
+      if (s === '入寮中') return 'badge-success';
+      if (s === '退寮済') return 'badge-gray';
 
       return 'badge-gray';
     }
