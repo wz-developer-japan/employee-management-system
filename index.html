@@ -25,9 +25,7 @@
       --sidebar-width: 240px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -36,20 +34,9 @@
       color: var(--text);
     }
 
-    button,
-    input,
-    select,
-    textarea {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    .hidden {
-      display: none !important;
-    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .hidden { display: none !important; }
 
     .login-page {
       min-height: 100vh;
@@ -98,21 +85,18 @@
       margin-bottom: 24px;
     }
 
-    .form-group {
-      margin-bottom: 16px;
-    }
+    .form-group { margin-bottom: 16px; }
 
-    .form-label {
+    .form-label,
+    .mini-label {
       display: block;
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
       margin-bottom: 7px;
       color: #374151;
     }
 
-    .input,
-    .select,
-    .textarea {
+    .input, .select, .textarea {
       width: 100%;
       border: 1px solid var(--border);
       background: #fff;
@@ -127,11 +111,15 @@
       resize: vertical;
     }
 
-    .input:focus,
-    .select:focus,
-    .textarea:focus {
+    .input:focus, .select:focus, .textarea:focus {
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(0, 87, 200, 0.12);
+    }
+
+    .required {
+      color: var(--danger);
+      font-weight: 900;
+      margin-left: 3px;
     }
 
     .btn {
@@ -147,14 +135,8 @@
       white-space: nowrap;
     }
 
-    .btn-primary {
-      background: var(--primary);
-      color: #fff;
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-dark);
-    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
 
     .btn-outline {
       background: #fff;
@@ -162,18 +144,14 @@
       border: 1px solid #bcd2ff;
     }
 
-    .btn-outline:hover {
-      background: var(--primary-light);
-    }
+    .btn-outline:hover { background: var(--primary-light); }
 
     .btn-danger {
       background: var(--danger);
       color: #fff;
     }
 
-    .btn-danger:hover {
-      background: #b3261e;
-    }
+    .btn-danger:hover { background: #b3261e; }
 
     .btn-danger-outline {
       background: #fff;
@@ -181,13 +159,9 @@
       border: 1px solid #f3b8b3;
     }
 
-    .btn-danger-outline:hover {
-      background: #fde8e6;
-    }
+    .btn-danger-outline:hover { background: #fde8e6; }
 
-    .btn-full {
-      width: 100%;
-    }
+    .btn-full { width: 100%; }
 
     .login-message {
       margin-top: 14px;
@@ -196,15 +170,26 @@
       min-height: 20px;
     }
 
-    .demo-note {
-      margin-top: 18px;
-      padding: 12px;
-      background: #f8fafc;
-      border: 1px dashed #cbd5e1;
-      border-radius: 12px;
+    .demo-note, .form-note {
       color: var(--muted);
       font-size: 13px;
-      line-height: 1.6;
+      line-height: 1.7;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+    }
+
+    .danger-note {
+      color: #7f1d1d;
+      font-size: 13px;
+      line-height: 1.7;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 18px;
     }
 
     .app {
@@ -234,9 +219,7 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.14);
     }
 
-    .nav {
-      padding: 12px;
-    }
+    .nav { padding: 12px; }
 
     .nav-item {
       width: 100%;
@@ -253,8 +236,7 @@
       margin-bottom: 4px;
     }
 
-    .nav-item:hover,
-    .nav-item.active {
+    .nav-item:hover, .nav-item.active {
       background: rgba(255, 255, 255, 0.13);
       color: #fff;
     }
@@ -359,17 +341,9 @@
       color: var(--primary);
     }
 
-    .card-title.teal {
-      color: var(--teal);
-    }
-
-    .card-title.orange {
-      color: var(--orange);
-    }
-
-    .card-title.purple {
-      color: var(--purple);
-    }
+    .card-title.teal { color: var(--teal); }
+    .card-title.orange { color: var(--orange); }
+    .card-title.purple { color: var(--purple); }
 
     .stat-row {
       display: grid;
@@ -377,18 +351,14 @@
       gap: 8px;
     }
 
-    .stat-row.two {
-      grid-template-columns: repeat(2, 1fr);
-    }
+    .stat-row.two { grid-template-columns: repeat(2, 1fr); }
 
     .stat-item {
       text-align: center;
       border-right: 1px solid var(--border);
     }
 
-    .stat-item:last-child {
-      border-right: none;
-    }
+    .stat-item:last-child { border-right: none; }
 
     .stat-label {
       color: var(--muted);
@@ -404,17 +374,9 @@
       line-height: 1.1;
     }
 
-    .stat-value.teal {
-      color: var(--teal);
-    }
-
-    .stat-value.orange {
-      color: var(--orange);
-    }
-
-    .stat-value.purple {
-      color: var(--purple);
-    }
+    .stat-value.teal { color: var(--teal); }
+    .stat-value.orange { color: var(--orange); }
+    .stat-value.purple { color: var(--purple); }
 
     .unit {
       font-size: 14px;
@@ -457,45 +419,7 @@
       gap: 16px;
     }
 
-    .form-grid .full {
-      grid-column: 1 / -1;
-    }
-
-    .mini-label {
-      font-size: 12px;
-      font-weight: 800;
-      color: #374151;
-      margin-bottom: 6px;
-      display: block;
-    }
-
-    .required {
-      color: var(--danger);
-      font-weight: 900;
-      margin-left: 3px;
-    }
-
-    .form-note {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.7;
-      background: #f8fafc;
-      border: 1px solid var(--border);
-      padding: 12px;
-      border-radius: 12px;
-      margin-bottom: 18px;
-    }
-
-    .danger-note {
-      color: #7f1d1d;
-      font-size: 13px;
-      line-height: 1.7;
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      padding: 12px;
-      border-radius: 12px;
-      margin-bottom: 18px;
-    }
+    .form-grid .full { grid-column: 1 / -1; }
 
     .button-row {
       display: flex;
@@ -536,14 +460,8 @@
       vertical-align: middle;
     }
 
-    tr:last-child td {
-      border-bottom: none;
-    }
-
-    tr.clickable:hover {
-      background: #f8fbff;
-      cursor: pointer;
-    }
+    tr:last-child td { border-bottom: none; }
+    tr.clickable:hover { background: #f8fbff; cursor: pointer; }
 
     .badge {
       display: inline-flex;
@@ -555,25 +473,10 @@
       font-weight: 800;
     }
 
-    .badge-success {
-      background: #e6f4ea;
-      color: #137333;
-    }
-
-    .badge-warning {
-      background: #fff7e0;
-      color: #b06000;
-    }
-
-    .badge-danger {
-      background: #fde8e6;
-      color: #b3261e;
-    }
-
-    .badge-gray {
-      background: #f3f4f6;
-      color: #4b5563;
-    }
+    .badge-success { background: #e6f4ea; color: #137333; }
+    .badge-warning { background: #fff7e0; color: #b06000; }
+    .badge-danger { background: #fde8e6; color: #b3261e; }
+    .badge-gray { background: #f3f4f6; color: #4b5563; }
 
     .empty {
       color: var(--muted);
@@ -582,15 +485,8 @@
       background: #fff;
     }
 
-    .small-table table {
-      min-width: 420px;
-    }
-
-    .small-table td,
-    .small-table th {
-      font-size: 13px;
-      padding: 10px;
-    }
+    .small-table table { min-width: 420px; }
+    .small-table td, .small-table th { font-size: 13px; padding: 10px; }
 
     .drawer-backdrop {
       position: fixed;
@@ -600,9 +496,7 @@
       display: none;
     }
 
-    .drawer-backdrop.show {
-      display: block;
-    }
+    .drawer-backdrop.show { display: block; }
 
     .drawer {
       position: fixed;
@@ -620,9 +514,7 @@
       flex-direction: column;
     }
 
-    .drawer.show {
-      transform: translateX(0);
-    }
+    .drawer.show { transform: translateX(0); }
 
     .drawer-header {
       height: 70px;
@@ -665,9 +557,7 @@
       border-bottom: 1px solid var(--border);
     }
 
-    .detail-row:last-child {
-      border-bottom: none;
-    }
+    .detail-row:last-child { border-bottom: none; }
 
     .detail-label {
       background: #f8fafc;
@@ -707,9 +597,7 @@
       padding: 20px;
     }
 
-    .modal-backdrop.show {
-      display: flex;
-    }
+    .modal-backdrop.show { display: flex; }
 
     .modal {
       background: #fff;
@@ -721,9 +609,7 @@
       box-shadow: 0 20px 60px rgba(15, 23, 42, 0.28);
     }
 
-    .modal.small {
-      max-width: 520px;
-    }
+    .modal.small { max-width: 520px; }
 
     .modal-header {
       height: 68px;
@@ -739,9 +625,7 @@
       font-weight: 900;
     }
 
-    .modal-body {
-      padding: 20px;
-    }
+    .modal-body { padding: 20px; }
 
     .loading {
       position: fixed;
@@ -756,9 +640,7 @@
       color: var(--primary);
     }
 
-    .loading.show {
-      display: flex;
-    }
+    .loading.show { display: flex; }
 
     .toast {
       position: fixed;
@@ -777,58 +659,34 @@
       text-align: center;
     }
 
-    .toast.show {
-      display: block;
-    }
+    .toast.show { display: block; }
 
-    .mobile-bottom-nav {
-      display: none;
-    }
+    .mobile-bottom-nav { display: none; }
 
     @media (max-width: 1180px) {
-      .stats-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .dashboard-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .search-grid {
-        grid-template-columns: 1fr 1fr;
-      }
+      .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .dashboard-layout { grid-template-columns: 1fr; }
+      .search-grid { grid-template-columns: 1fr 1fr; }
     }
 
     @media (max-width: 820px) {
-      .sidebar {
-        transform: translateX(-105%);
-      }
-
-      .sidebar.show {
-        transform: translateX(0);
-      }
+      .sidebar { transform: translateX(-105%); }
+      .sidebar.show { transform: translateX(0); }
 
       .main {
         margin-left: 0;
         width: 100%;
       }
 
-      .hamburger {
-        display: flex;
-      }
+      .hamburger { display: flex; }
 
       .topbar {
         height: 62px;
         padding: 0 14px;
       }
 
-      .page-title {
-        font-size: 18px;
-      }
-
-      .user-box span {
-        display: none;
-      }
+      .page-title { font-size: 18px; }
+      .user-box span { display: none; }
 
       .content {
         padding: 14px;
@@ -845,27 +703,18 @@
         padding: 16px;
       }
 
-      .stat-value {
-        font-size: 24px;
-      }
+      .stat-value { font-size: 24px; }
 
-      .search-grid,
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
+      .search-grid, .form-grid { grid-template-columns: 1fr; }
 
-      .section-card {
-        padding: 14px;
-      }
+      .section-card { padding: 14px; }
 
       .drawer {
         width: 100%;
         max-width: 100vw;
       }
 
-      .detail-row {
-        grid-template-columns: 118px minmax(0, 1fr);
-      }
+      .detail-row { grid-template-columns: 118px minmax(0, 1fr); }
 
       .mobile-bottom-nav {
         display: grid;
@@ -893,13 +742,8 @@
         font-weight: 800;
       }
 
-      .bottom-item.active {
-        color: var(--primary);
-      }
-
-      .bottom-icon {
-        font-size: 20px;
-      }
+      .bottom-item.active { color: var(--primary); }
+      .bottom-icon { font-size: 20px; }
 
       .button-row {
         display: grid;
@@ -1403,14 +1247,61 @@
     </div>
   </div>
 
+  <div id="paidLeaveModalBackdrop" class="modal-backdrop">
+    <div class="modal small">
+      <div class="modal-header">
+        <div class="modal-title">有給休暇登録</div>
+        <button class="close-btn" onclick="closePaidLeaveModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <input id="paidLeaveEmployeeId" type="hidden" />
+
+        <div class="form-note">
+          自社社員の有給休暇取得を登録します。<br>
+          残数不足の場合は登録されません。古い付与分から自動で消化します。
+        </div>
+
+        <div class="form-group">
+          <label class="mini-label">対象社員</label>
+          <input id="paidLeaveEmployeeName" class="input" type="text" disabled />
+        </div>
+
+        <div class="form-group">
+          <label class="mini-label">現在の有休残数</label>
+          <input id="paidLeaveCurrentRemain" class="input" type="text" disabled />
+        </div>
+
+        <div class="form-group">
+          <label class="mini-label">取得日<span class="required">*</span></label>
+          <input id="paidLeaveDate" class="input" type="date" />
+        </div>
+
+        <div class="form-group">
+          <label class="mini-label">種別<span class="required">*</span></label>
+          <select id="paidLeaveType" class="select">
+            <option value="全日">全日（1日）</option>
+            <option value="半日">半日（0.5日）</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="mini-label">備考</label>
+          <textarea id="paidLeaveNote" class="textarea" placeholder="必要に応じてメモを入力"></textarea>
+        </div>
+
+        <div class="button-row">
+          <button class="btn btn-outline" onclick="closePaidLeaveModal()">キャンセル</button>
+          <button class="btn btn-primary" onclick="registerPaidLeave()">有休を登録する</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="loading" class="loading">読み込み中...</div>
   <div id="toast" class="toast"></div>
 
   <script>
-    /****************************************************
-     * 従業員管理システム GitHub Pages フロント
-     ****************************************************/
-
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxcDMtCi-MJb62ypIf2kLhH1JPf9MKdlkJJlKRPfmz4B84FZVAHwOPBFu4K6FLw--ZvfA/exec';
 
     const STORAGE_TOKEN_KEY = 'employee_management_token';
@@ -1825,7 +1716,7 @@
       const actionBlock = data.type === '自社'
         ? `
           <div class="drawer-actions">
-            <button class="btn btn-primary btn-full" onclick="showComingSoon('有給休暇登録')">📅 有給休暇登録</button>
+            <button class="btn btn-primary btn-full" onclick="openPaidLeaveModal()">📅 有給休暇登録</button>
             <button class="btn btn-outline btn-full" onclick="showComingSoon('前借り記録')">💴 前借り記録</button>
             <button class="btn btn-outline btn-full" onclick="showComingSoon('寮管理')">🏢 寮情報を見る</button>
           </div>
@@ -1943,12 +1834,6 @@
         await searchEmployees();
 
         showSection('top');
-        setTimeout(() => {
-          document.getElementById('employeeSearchCard').scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }, 200);
 
       } catch (err) {
         console.error(err);
@@ -1969,6 +1854,81 @@
       document.getElementById('partnerPhone').value = '';
       document.getElementById('partnerEmail').value = '';
       document.getElementById('partnerNote').value = '';
+    }
+
+    function openPaidLeaveModal() {
+      if (!currentDetailEmployee || currentDetailEmployee.type !== '自社') {
+        toast('自社社員の詳細を開いてください。');
+        return;
+      }
+
+      const data = currentDetailEmployee;
+      const paid = data.paidLeave || {};
+
+      document.getElementById('paidLeaveEmployeeId').value = data.employeeId || '';
+      document.getElementById('paidLeaveEmployeeName').value = `${data.name || ''}（${data.employeeId || ''}）`;
+      document.getElementById('paidLeaveCurrentRemain').value = `${paid.totalRemain || 0}日`;
+      document.getElementById('paidLeaveDate').value = todayInputDate();
+      document.getElementById('paidLeaveType').value = '全日';
+      document.getElementById('paidLeaveNote').value = '';
+
+      document.getElementById('paidLeaveModalBackdrop').classList.add('show');
+    }
+
+    function closePaidLeaveModal() {
+      document.getElementById('paidLeaveModalBackdrop').classList.remove('show');
+    }
+
+    async function registerPaidLeave() {
+      const payload = {
+        employeeId: document.getElementById('paidLeaveEmployeeId').value.trim(),
+        leaveDate: document.getElementById('paidLeaveDate').value.trim(),
+        leaveType: document.getElementById('paidLeaveType').value.trim(),
+        note: document.getElementById('paidLeaveNote').value.trim()
+      };
+
+      if (!payload.employeeId) {
+        toast('従業員番号が取得できません。');
+        return;
+      }
+
+      if (!payload.leaveDate) {
+        toast('取得日を入力してください。');
+        return;
+      }
+
+      if (!payload.leaveType) {
+        toast('種別を選択してください。');
+        return;
+      }
+
+      const name = currentDetailEmployee ? currentDetailEmployee.name : payload.employeeId;
+      const ok = confirm(`${name} の有休を登録します。\n取得日：${payload.leaveDate}\n種別：${payload.leaveType}\nよろしいですか？`);
+      if (!ok) return;
+
+      showLoading();
+
+      try {
+        const result = await api('registerPaidLeave', payload);
+
+        if (!result.success) {
+          toast(result.message || '有休登録に失敗しました。');
+          return;
+        }
+
+        toast(result.message || '有休を登録しました。');
+        closePaidLeaveModal();
+
+        await loadDashboard();
+        await searchEmployees();
+        await openEmployeeDetail(payload.employeeId, 'self');
+
+      } catch (err) {
+        console.error(err);
+        toast('有休登録で通信エラーが発生しました。');
+      } finally {
+        hideLoading();
+      }
     }
 
     function openPartnerEditModal() {
@@ -2109,7 +2069,6 @@
       }
 
       const name = currentDetailEmployee ? currentDetailEmployee.name : payload.employeeId;
-
       const ok = confirm(`協力従業員「${name}」を離職処理します。よろしいですか？`);
       if (!ok) return;
 
