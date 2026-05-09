@@ -15,7 +15,6 @@
       --purple: #7a3db8;
       --danger: #d93025;
       --success: #0f9d58;
-      --warning: #f9ab00;
       --bg: #f4f6fa;
       --card: #ffffff;
       --text: #1f2937;
@@ -39,7 +38,8 @@
 
     button,
     input,
-    select {
+    select,
+    textarea {
       font: inherit;
     }
 
@@ -50,10 +50,6 @@
     .hidden {
       display: none !important;
     }
-
-    /* =========================
-       Login
-    ========================= */
 
     .login-page {
       min-height: 100vh;
@@ -115,7 +111,8 @@
     }
 
     .input,
-    .select {
+    .select,
+    .textarea {
       width: 100%;
       border: 1px solid var(--border);
       background: #fff;
@@ -125,8 +122,14 @@
       transition: 0.15s;
     }
 
+    .textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
     .input:focus,
-    .select:focus {
+    .select:focus,
+    .textarea:focus {
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(0, 87, 200, 0.12);
     }
@@ -190,10 +193,6 @@
       font-size: 13px;
       line-height: 1.6;
     }
-
-    /* =========================
-       App Layout
-    ========================= */
 
     .app {
       display: flex;
@@ -318,10 +317,6 @@
       margin: 0 auto;
     }
 
-    /* =========================
-       Cards
-    ========================= */
-
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -443,6 +438,16 @@
       margin-bottom: 18px;
     }
 
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .form-grid .full {
+      grid-column: 1 / -1;
+    }
+
     .mini-label {
       font-size: 12px;
       font-weight: 800;
@@ -451,9 +456,30 @@
       display: block;
     }
 
-    /* =========================
-       Table
-    ========================= */
+    .required {
+      color: var(--danger);
+      font-weight: 900;
+      margin-left: 3px;
+    }
+
+    .form-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
 
     .table-wrap {
       overflow-x: auto;
@@ -541,10 +567,6 @@
       font-size: 13px;
       padding: 10px;
     }
-
-    /* =========================
-       Drawer
-    ========================= */
 
     .drawer-backdrop {
       position: fixed;
@@ -649,10 +671,6 @@
       margin: 22px 0 10px;
     }
 
-    /* =========================
-       Loading / Toast
-    ========================= */
-
     .loading {
       position: fixed;
       inset: 0;
@@ -683,15 +701,13 @@
       z-index: 120;
       font-size: 14px;
       display: none;
+      max-width: calc(100vw - 32px);
+      text-align: center;
     }
 
     .toast.show {
       display: block;
     }
-
-    /* =========================
-       Mobile
-    ========================= */
 
     .mobile-bottom-nav {
       display: none;
@@ -761,7 +777,8 @@
         font-size: 24px;
       }
 
-      .search-grid {
+      .search-grid,
+      .form-grid {
         grid-template-columns: 1fr;
       }
 
@@ -811,12 +828,16 @@
       .bottom-icon {
         font-size: 20px;
       }
+
+      .button-row {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 
 <body>
-  <!-- ログイン画面 -->
   <div id="loginPage" class="login-page">
     <div class="login-card">
       <div class="login-logo">従</div>
@@ -846,16 +867,15 @@
     </div>
   </div>
 
-  <!-- アプリ本体 -->
   <div id="appPage" class="app hidden">
     <aside id="sidebar" class="sidebar">
       <div class="sidebar-header">従業員管理システム</div>
 
       <nav class="nav">
-        <button class="nav-item active" onclick="showTop()"><span>🏠</span>TOP</button>
-        <button class="nav-item" onclick="focusEmployeeSearch()"><span>🔍</span>従業員検索</button>
+        <button id="navTop" class="nav-item active" onclick="showSection('top')"><span>🏠</span>TOP</button>
+        <button id="navSearch" class="nav-item" onclick="showSection('top', true)"><span>🔍</span>従業員検索</button>
         <button class="nav-item" onclick="showComingSoon('有給管理')"><span>📅</span>有給管理</button>
-        <button class="nav-item" onclick="showComingSoon('協力従業員登録')"><span>👥</span>協力従業員登録</button>
+        <button id="navPartnerRegister" class="nav-item" onclick="showSection('partnerRegister')"><span>👥</span>協力従業員登録</button>
         <button class="nav-item" onclick="showComingSoon('給与口座閲覧')"><span>🏦</span>給与口座閲覧</button>
         <button class="nav-item" onclick="showComingSoon('前借り記録')"><span>💴</span>前借り記録</button>
         <button class="nav-item" onclick="showComingSoon('寮管理')"><span>🏢</span>寮管理</button>
@@ -868,7 +888,7 @@
       <header class="topbar">
         <div class="topbar-left">
           <button class="hamburger" onclick="toggleSidebar()">☰</button>
-          <div class="page-title">TOP</div>
+          <div id="pageTitle" class="page-title">TOP</div>
         </div>
 
         <div class="user-box">
@@ -879,200 +899,275 @@
       </header>
 
       <div class="content">
-        <!-- サマリーカード -->
-        <section class="stats-grid">
-          <div class="card stat-card">
-            <div class="card-title">
-              <span>現在在籍者数</span>
-              <span>👥</span>
+        <section id="topSection">
+          <section class="stats-grid">
+            <div class="card stat-card">
+              <div class="card-title">
+                <span>現在在籍者数</span>
+                <span>👥</span>
+              </div>
+              <div class="stat-row">
+                <div class="stat-item">
+                  <div class="stat-label">自社</div>
+                  <div class="stat-value" id="countSelf">-</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">協力</div>
+                  <div class="stat-value" id="countPartner">-</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">合計</div>
+                  <div class="stat-value" id="countTotal">-</div>
+                </div>
+              </div>
             </div>
-            <div class="stat-row">
-              <div class="stat-item">
-                <div class="stat-label">自社</div>
-                <div class="stat-value" id="countSelf">-</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-label">協力</div>
-                <div class="stat-value" id="countPartner">-</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-label">合計</div>
-                <div class="stat-value" id="countTotal">-</div>
-              </div>
-            </div>
-          </div>
 
-          <div class="card stat-card">
-            <div class="card-title teal">
-              <span>寮管理</span>
-              <span>🏢</span>
+            <div class="card stat-card">
+              <div class="card-title teal">
+                <span>寮管理</span>
+                <span>🏢</span>
+              </div>
+              <div class="stat-row">
+                <div class="stat-item">
+                  <div class="stat-label">管理中</div>
+                  <div class="stat-value teal"><span id="dormTotal">-</span><span class="unit">室</span></div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">使用中</div>
+                  <div class="stat-value teal"><span id="dormUsing">-</span><span class="unit">室</span></div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">空室</div>
+                  <div class="stat-value teal"><span id="dormVacant">-</span><span class="unit">室</span></div>
+                </div>
+              </div>
             </div>
-            <div class="stat-row">
-              <div class="stat-item">
-                <div class="stat-label">管理中</div>
-                <div class="stat-value teal"><span id="dormTotal">-</span><span class="unit">室</span></div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-label">使用中</div>
-                <div class="stat-value teal"><span id="dormUsing">-</span><span class="unit">室</span></div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-label">空室</div>
-                <div class="stat-value teal"><span id="dormVacant">-</span><span class="unit">室</span></div>
-              </div>
-            </div>
-          </div>
 
-          <div class="card stat-card">
-            <div class="card-title orange">
-              <span>有休アラート</span>
-              <span>🔔</span>
-            </div>
-            <div class="stat-row two">
-              <div class="stat-item">
-                <div class="stat-label">付与予定</div>
-                <div class="stat-value orange"><span id="paidGrantDue">-</span><span class="unit">名</span></div>
+            <div class="card stat-card">
+              <div class="card-title orange">
+                <span>有休アラート</span>
+                <span>🔔</span>
               </div>
-              <div class="stat-item">
-                <div class="stat-label">30日以内消滅</div>
-                <div class="stat-value orange"><span id="paidExpireSoon">-</span><span class="unit">件</span></div>
+              <div class="stat-row two">
+                <div class="stat-item">
+                  <div class="stat-label">付与予定</div>
+                  <div class="stat-value orange"><span id="paidGrantDue">-</span><span class="unit">名</span></div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">30日以内消滅</div>
+                  <div class="stat-value orange"><span id="paidExpireSoon">-</span><span class="unit">件</span></div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="card stat-card">
-            <div class="card-title purple">
-              <span>前借りメモ</span>
-              <span>🧾</span>
-            </div>
-            <div class="stat-row two">
-              <div class="stat-item">
-                <div class="stat-label">今月控除対象</div>
-                <div class="stat-value purple"><span id="advanceCount">-</span><span class="unit">件</span></div>
+            <div class="card stat-card">
+              <div class="card-title purple">
+                <span>前借りメモ</span>
+                <span>🧾</span>
               </div>
-              <div class="stat-item">
-                <div class="stat-label">合計金額</div>
-                <div class="stat-value purple" style="font-size:20px;"><span id="advanceAmount">-</span></div>
+              <div class="stat-row two">
+                <div class="stat-item">
+                  <div class="stat-label">今月控除対象</div>
+                  <div class="stat-value purple"><span id="advanceCount">-</span><span class="unit">件</span></div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">合計金額</div>
+                  <div class="stat-value purple" style="font-size:20px;"><span id="advanceAmount">-</span></div>
+                </div>
               </div>
             </div>
-          </div>
+          </section>
+
+          <section class="dashboard-layout">
+            <div>
+              <div id="employeeSearchCard" class="card section-card">
+                <h2 class="section-title">🔍 従業員検索</h2>
+
+                <div class="search-grid">
+                  <div>
+                    <label class="mini-label">氏名・カナ・番号</label>
+                    <input id="searchName" class="input" type="text" placeholder="氏名を入力" />
+                  </div>
+
+                  <div>
+                    <label class="mini-label">ステータス</label>
+                    <select id="searchStatus" class="select">
+                      <option value="すべて">すべて</option>
+                      <option value="在籍">在籍</option>
+                      <option value="離職">離職</option>
+                      <option value="休職中">休職中</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="mini-label">所属企業</label>
+                    <input id="searchCompany" class="input" type="text" placeholder="例：W'z Design" />
+                  </div>
+
+                  <div>
+                    <label class="mini-label">配属先</label>
+                    <input id="searchDepartment" class="input" type="text" placeholder="例：ETCH" />
+                  </div>
+
+                  <button class="btn btn-primary" onclick="searchEmployees()">検索</button>
+                  <button class="btn btn-outline" onclick="clearSearch()">クリア</button>
+                </div>
+
+                <h3 class="section-title" style="font-size:15px; margin-top:8px;">検索結果</h3>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>従業員番号</th>
+                        <th>氏名</th>
+                        <th>ステータス</th>
+                        <th>区分</th>
+                        <th>所属</th>
+                        <th>配属先</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody id="employeeResultBody">
+                      <tr>
+                        <td colspan="7" class="empty">検索すると結果が表示されます。</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="card section-card">
+                <h2 class="section-title">📅 有休保有者一覧</h2>
+                <div class="small-table table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>氏名</th>
+                        <th>保有数</th>
+                        <th>次回付与日</th>
+                      </tr>
+                    </thead>
+                    <tbody id="paidLeaveMiniBody">
+                      <tr>
+                        <td colspan="3" class="empty">従業員詳細で確認できます。</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="card section-card">
+                <h2 class="section-title">🏢 寮管理サマリー</h2>
+                <div class="detail-list">
+                  <div class="detail-row">
+                    <div class="detail-label">家賃支払総額</div>
+                    <div class="detail-value" id="dormTotalRent">-</div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-label">寮費徴収予定</div>
+                    <div class="detail-value" id="dormTotalFee">-</div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-label">会社負担額</div>
+                    <div class="detail-value" id="dormCompanyCost">-</div>
+                  </div>
+                </div>
+
+                <button class="btn btn-outline btn-full" onclick="showComingSoon('寮管理')">
+                  寮管理画面へ
+                </button>
+              </div>
+            </div>
+          </section>
         </section>
 
-        <section class="dashboard-layout">
-          <!-- 従業員検索 -->
-          <div>
-            <div id="employeeSearchCard" class="card section-card">
-              <h2 class="section-title">🔍 従業員検索</h2>
+        <section id="partnerRegisterSection" class="hidden">
+          <div class="card section-card">
+            <h2 class="section-title">👥 協力従業員登録</h2>
 
-              <div class="search-grid">
-                <div>
-                  <label class="mini-label">氏名・カナ・番号</label>
-                  <input id="searchName" class="input" type="text" placeholder="氏名を入力" />
-                </div>
-
-                <div>
-                  <label class="mini-label">ステータス</label>
-                  <select id="searchStatus" class="select">
-                    <option value="すべて">すべて</option>
-                    <option value="在籍">在籍</option>
-                    <option value="離職">離職</option>
-                    <option value="休職中">休職中</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label class="mini-label">所属企業</label>
-                  <input id="searchCompany" class="input" type="text" placeholder="例：W'z Design" />
-                </div>
-
-                <div>
-                  <label class="mini-label">配属先</label>
-                  <input id="searchDepartment" class="input" type="text" placeholder="例：ETCH" />
-                </div>
-
-                <button class="btn btn-primary" onclick="searchEmployees()">検索</button>
-                <button class="btn btn-outline" onclick="clearSearch()">クリア</button>
-              </div>
-
-              <h3 class="section-title" style="font-size:15px; margin-top:8px;">検索結果</h3>
-              <div class="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>従業員番号</th>
-                      <th>氏名</th>
-                      <th>ステータス</th>
-                      <th>区分</th>
-                      <th>所属</th>
-                      <th>配属先</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody id="employeeResultBody">
-                    <tr>
-                      <td colspan="7" class="empty">検索すると結果が表示されます。</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+            <div class="form-note">
+              協力会社雇用のスタッフを登録します。登録後は「従業員検索」に表示されます。<br>
+              有休管理・給与口座閲覧・寮管理は原則として自社社員のみ対象です。
             </div>
-          </div>
 
-          <!-- 右側サマリー -->
-          <div>
-            <div class="card section-card">
-              <h2 class="section-title">📅 有休保有者一覧</h2>
-              <div class="small-table table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>氏名</th>
-                      <th>保有数</th>
-                      <th>次回付与日</th>
-                    </tr>
-                  </thead>
-                  <tbody id="paidLeaveMiniBody">
-                    <tr>
-                      <td colspan="3" class="empty">従業員検索後、詳細で確認できます。</td>
-                    </tr>
-                  </tbody>
-                </table>
+            <div class="form-grid">
+              <div>
+                <label class="mini-label">氏名<span class="required">*</span></label>
+                <input id="partnerName" class="input" type="text" placeholder="例：Nguyen Van B" />
+              </div>
+
+              <div>
+                <label class="mini-label">氏名カナ</label>
+                <input id="partnerKana" class="input" type="text" placeholder="例：グエン ヴァン ビー" />
+              </div>
+
+              <div>
+                <label class="mini-label">所属企業<span class="required">*</span></label>
+                <select id="partnerCompany" class="select">
+                  <option value="">読み込み中...</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="mini-label">配属先<span class="required">*</span></label>
+                <select id="partnerDepartment" class="select">
+                  <option value="">読み込み中...</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="mini-label">協力開始日<span class="required">*</span></label>
+                <input id="partnerStartDate" class="input" type="date" />
+              </div>
+
+              <div>
+                <label class="mini-label">生年月日</label>
+                <input id="partnerBirthDate" class="input" type="date" />
+              </div>
+
+              <div>
+                <label class="mini-label">性別</label>
+                <select id="partnerGender" class="select">
+                  <option value="">選択してください</option>
+                  <option value="男性">男性</option>
+                  <option value="女性">女性</option>
+                  <option value="その他">その他</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="mini-label">電話番号</label>
+                <input id="partnerPhone" class="input" type="tel" placeholder="例：090-0000-0000" />
+              </div>
+
+              <div>
+                <label class="mini-label">メールアドレス</label>
+                <input id="partnerEmail" class="input" type="email" placeholder="例：sample@example.com" />
+              </div>
+
+              <div class="full">
+                <label class="mini-label">備考</label>
+                <textarea id="partnerNote" class="textarea" placeholder="必要に応じてメモを入力"></textarea>
               </div>
             </div>
 
-            <div class="card section-card">
-              <h2 class="section-title">🏢 寮管理サマリー</h2>
-              <div class="detail-list">
-                <div class="detail-row">
-                  <div class="detail-label">家賃支払総額</div>
-                  <div class="detail-value" id="dormTotalRent">-</div>
-                </div>
-                <div class="detail-row">
-                  <div class="detail-label">寮費徴収予定</div>
-                  <div class="detail-value" id="dormTotalFee">-</div>
-                </div>
-                <div class="detail-row">
-                  <div class="detail-label">会社負担額</div>
-                  <div class="detail-value" id="dormCompanyCost">-</div>
-                </div>
-              </div>
-
-              <button class="btn btn-outline btn-full" onclick="showComingSoon('寮管理')">
-                寮管理画面へ
-              </button>
+            <div class="button-row">
+              <button class="btn btn-outline" onclick="clearPartnerForm()">入力クリア</button>
+              <button class="btn btn-primary" onclick="registerPartnerEmployee()">協力従業員を登録</button>
             </div>
           </div>
         </section>
       </div>
     </main>
 
-    <!-- スマホ下部ナビ -->
     <nav class="mobile-bottom-nav">
-      <button class="bottom-item active" onclick="showTop()">
+      <button class="bottom-item active" onclick="showSection('top')">
         <span class="bottom-icon">🏠</span>
         <span>TOP</span>
       </button>
-      <button class="bottom-item" onclick="focusEmployeeSearch()">
+      <button class="bottom-item" onclick="showSection('top', true)">
         <span class="bottom-icon">🔍</span>
         <span>検索</span>
       </button>
@@ -1091,7 +1186,6 @@
     </nav>
   </div>
 
-  <!-- 詳細ドロワー -->
   <div id="drawerBackdrop" class="drawer-backdrop" onclick="closeDrawer()"></div>
 
   <aside id="detailDrawer" class="drawer">
@@ -1119,6 +1213,11 @@
     const STORAGE_USER_KEY = 'employee_management_user';
 
     let currentUser = null;
+    let masterData = {
+      companies: [],
+      partnerCompanies: [],
+      departments: []
+    };
 
     window.addEventListener('DOMContentLoaded', async () => {
       const token = localStorage.getItem(STORAGE_TOKEN_KEY);
@@ -1136,8 +1235,7 @@
         const ok = await checkSession();
         if (ok) {
           showApp();
-          await loadDashboard();
-          await searchEmployees();
+          await initialLoad();
         } else {
           showLogin();
         }
@@ -1145,6 +1243,12 @@
         showLogin();
       }
     });
+
+    async function initialLoad() {
+      await loadMasterData();
+      await loadDashboard();
+      await searchEmployees();
+    }
 
     async function api(action, payload = {}) {
       const token = localStorage.getItem(STORAGE_TOKEN_KEY);
@@ -1188,7 +1292,7 @@
 
       setTimeout(() => {
         el.classList.remove('show');
-      }, 2400);
+      }, 2600);
     }
 
     function showLogin() {
@@ -1235,8 +1339,7 @@
         showApp();
         toast('ログインしました。');
 
-        await loadDashboard();
-        await searchEmployees();
+        await initialLoad();
 
       } catch (err) {
         console.error(err);
@@ -1282,6 +1385,47 @@
         hideLoading();
         showLogin();
       }
+    }
+
+    async function loadMasterData() {
+      try {
+        const result = await api('getMasterData');
+
+        if (!result.success) {
+          toast(result.message || 'マスタ取得に失敗しました。');
+          return;
+        }
+
+        masterData = result.data || {
+          companies: [],
+          partnerCompanies: [],
+          departments: []
+        };
+
+        renderPartnerSelects();
+
+      } catch (err) {
+        console.error(err);
+        toast('マスタ取得で通信エラーが発生しました。');
+      }
+    }
+
+    function renderPartnerSelects() {
+      const companySelect = document.getElementById('partnerCompany');
+      const departmentSelect = document.getElementById('partnerDepartment');
+
+      const partnerCompanies = masterData.partnerCompanies || [];
+      const departments = masterData.departments || [];
+
+      companySelect.innerHTML = '<option value="">選択してください</option>' +
+        partnerCompanies.map(company => {
+          return `<option value="${escapeAttr(company.companyName)}">${escapeHtml(company.companyName)}</option>`;
+        }).join('');
+
+      departmentSelect.innerHTML = '<option value="">選択してください</option>' +
+        departments.map(dept => {
+          return `<option value="${escapeAttr(dept.departmentName)}">${escapeHtml(dept.departmentName)}</option>`;
+        }).join('');
     }
 
     async function loadDashboard() {
@@ -1529,6 +1673,88 @@
       `;
     }
 
+    async function registerPartnerEmployee() {
+      const payload = {
+        name: document.getElementById('partnerName').value.trim(),
+        kana: document.getElementById('partnerKana').value.trim(),
+        company: document.getElementById('partnerCompany').value.trim(),
+        department: document.getElementById('partnerDepartment').value.trim(),
+        startDate: document.getElementById('partnerStartDate').value.trim(),
+        birthDate: document.getElementById('partnerBirthDate').value.trim(),
+        gender: document.getElementById('partnerGender').value.trim(),
+        phone: document.getElementById('partnerPhone').value.trim(),
+        email: document.getElementById('partnerEmail').value.trim(),
+        note: document.getElementById('partnerNote').value.trim()
+      };
+
+      if (!payload.name) {
+        toast('氏名を入力してください。');
+        return;
+      }
+
+      if (!payload.company) {
+        toast('所属企業を選択してください。');
+        return;
+      }
+
+      if (!payload.department) {
+        toast('配属先を選択してください。');
+        return;
+      }
+
+      if (!payload.startDate) {
+        toast('協力開始日を入力してください。');
+        return;
+      }
+
+      const ok = confirm(`協力従業員「${payload.name}」を登録します。よろしいですか？`);
+      if (!ok) return;
+
+      showLoading();
+
+      try {
+        const result = await api('registerPartnerEmployee', payload);
+
+        if (!result.success) {
+          toast(result.message || '協力従業員登録に失敗しました。');
+          return;
+        }
+
+        toast(result.message || '協力従業員を登録しました。');
+        clearPartnerForm();
+
+        await loadDashboard();
+        await searchEmployees();
+
+        showSection('top');
+        setTimeout(() => {
+          document.getElementById('employeeSearchCard').scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }, 200);
+
+      } catch (err) {
+        console.error(err);
+        toast('協力従業員登録で通信エラーが発生しました。');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function clearPartnerForm() {
+      document.getElementById('partnerName').value = '';
+      document.getElementById('partnerKana').value = '';
+      document.getElementById('partnerCompany').value = '';
+      document.getElementById('partnerDepartment').value = '';
+      document.getElementById('partnerStartDate').value = '';
+      document.getElementById('partnerBirthDate').value = '';
+      document.getElementById('partnerGender').value = '';
+      document.getElementById('partnerPhone').value = '';
+      document.getElementById('partnerEmail').value = '';
+      document.getElementById('partnerNote').value = '';
+    }
+
     function openDrawer() {
       document.getElementById('drawerBackdrop').classList.add('show');
       document.getElementById('detailDrawer').classList.add('show');
@@ -1547,24 +1773,41 @@
       searchEmployees();
     }
 
-    function focusEmployeeSearch() {
+    function showSection(sectionName, focusSearch) {
       closeMobileSidebar();
-      document.getElementById('employeeSearchCard').scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
+      closeDrawer();
 
-      setTimeout(() => {
-        document.getElementById('searchName').focus();
-      }, 500);
-    }
+      const topSection = document.getElementById('topSection');
+      const partnerRegisterSection = document.getElementById('partnerRegisterSection');
 
-    function showTop() {
-      closeMobileSidebar();
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
+      topSection.classList.add('hidden');
+      partnerRegisterSection.classList.add('hidden');
+
+      document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+
+      if (sectionName === 'partnerRegister') {
+        partnerRegisterSection.classList.remove('hidden');
+        document.getElementById('pageTitle').textContent = '協力従業員登録';
+        document.getElementById('navPartnerRegister').classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      topSection.classList.remove('hidden');
+      document.getElementById('pageTitle').textContent = 'TOP';
+      document.getElementById('navTop').classList.add('active');
+
+      if (focusSearch) {
+        setTimeout(() => {
+          document.getElementById('employeeSearchCard').scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+          document.getElementById('searchName').focus();
+        }, 100);
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
 
     function toggleSidebar() {
