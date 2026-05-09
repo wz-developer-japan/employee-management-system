@@ -166,10 +166,23 @@
       background: var(--primary-light);
     }
 
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      background: #b3261e;
+    }
+
     .btn-danger-outline {
       background: #fff;
       color: var(--danger);
       border: 1px solid #f3b8b3;
+    }
+
+    .btn-danger-outline:hover {
+      background: #fde8e6;
     }
 
     .btn-full {
@@ -473,6 +486,17 @@
       margin-bottom: 18px;
     }
 
+    .danger-note {
+      color: #7f1d1d;
+      font-size: 13px;
+      line-height: 1.7;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+    }
+
     .button-row {
       display: flex;
       gap: 12px;
@@ -657,6 +681,7 @@
       padding: 11px;
       font-size: 14px;
       word-break: break-word;
+      white-space: pre-wrap;
     }
 
     .drawer-actions {
@@ -669,6 +694,53 @@
       font-weight: 900;
       color: var(--teal);
       margin: 22px 0 10px;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.42);
+      z-index: 80;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal {
+      background: #fff;
+      width: 100%;
+      max-width: 780px;
+      max-height: 92vh;
+      overflow-y: auto;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.28);
+    }
+
+    .modal.small {
+      max-width: 520px;
+    }
+
+    .modal-header {
+      height: 68px;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .modal-body {
+      padding: 20px;
     }
 
     .loading {
@@ -1199,6 +1271,138 @@
     </div>
   </aside>
 
+  <div id="partnerEditModalBackdrop" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">協力従業員編集</div>
+        <button class="close-btn" onclick="closePartnerEditModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <input id="editPartnerEmployeeId" type="hidden" />
+
+        <div class="form-grid">
+          <div>
+            <label class="mini-label">協力従業員ID</label>
+            <input id="editPartnerEmployeeIdDisplay" class="input" type="text" disabled />
+          </div>
+
+          <div>
+            <label class="mini-label">ステータス</label>
+            <select id="editPartnerStatus" class="select">
+              <option value="在籍">在籍</option>
+              <option value="休職中">休職中</option>
+              <option value="離職">離職</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="mini-label">氏名<span class="required">*</span></label>
+            <input id="editPartnerName" class="input" type="text" />
+          </div>
+
+          <div>
+            <label class="mini-label">氏名カナ</label>
+            <input id="editPartnerKana" class="input" type="text" />
+          </div>
+
+          <div>
+            <label class="mini-label">所属企業<span class="required">*</span></label>
+            <select id="editPartnerCompany" class="select"></select>
+          </div>
+
+          <div>
+            <label class="mini-label">配属先<span class="required">*</span></label>
+            <select id="editPartnerDepartment" class="select"></select>
+          </div>
+
+          <div>
+            <label class="mini-label">協力開始日<span class="required">*</span></label>
+            <input id="editPartnerStartDate" class="input" type="date" />
+          </div>
+
+          <div>
+            <label class="mini-label">協力終了日</label>
+            <input id="editPartnerEndDate" class="input" type="date" />
+          </div>
+
+          <div>
+            <label class="mini-label">生年月日</label>
+            <input id="editPartnerBirthDate" class="input" type="date" />
+          </div>
+
+          <div>
+            <label class="mini-label">性別</label>
+            <select id="editPartnerGender" class="select">
+              <option value="">選択してください</option>
+              <option value="男性">男性</option>
+              <option value="女性">女性</option>
+              <option value="その他">その他</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="mini-label">電話番号</label>
+            <input id="editPartnerPhone" class="input" type="tel" />
+          </div>
+
+          <div>
+            <label class="mini-label">メールアドレス</label>
+            <input id="editPartnerEmail" class="input" type="email" />
+          </div>
+
+          <div class="full">
+            <label class="mini-label">備考</label>
+            <textarea id="editPartnerNote" class="textarea"></textarea>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button class="btn btn-outline" onclick="closePartnerEditModal()">キャンセル</button>
+          <button class="btn btn-primary" onclick="updatePartnerEmployee()">更新する</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="partnerRetireModalBackdrop" class="modal-backdrop">
+    <div class="modal small">
+      <div class="modal-header">
+        <div class="modal-title">協力従業員 離職処理</div>
+        <button class="close-btn" onclick="closePartnerRetireModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <input id="retirePartnerEmployeeId" type="hidden" />
+
+        <div class="danger-note">
+          離職処理を行うと、ステータスが「離職」になり、協力終了日が登録されます。<br>
+          履歴保持のため、データ自体は削除しません。
+        </div>
+
+        <div class="form-group">
+          <label class="mini-label">対象者</label>
+          <input id="retirePartnerName" class="input" type="text" disabled />
+        </div>
+
+        <div class="form-group">
+          <label class="mini-label">離職日<span class="required">*</span></label>
+          <input id="retirePartnerDate" class="input" type="date" />
+        </div>
+
+        <div class="form-group">
+          <label class="mini-label">離職メモ</label>
+          <textarea id="retirePartnerNote" class="textarea" placeholder="必要に応じて理由やメモを入力"></textarea>
+        </div>
+
+        <div class="button-row">
+          <button class="btn btn-outline" onclick="closePartnerRetireModal()">キャンセル</button>
+          <button class="btn btn-danger" onclick="retirePartnerEmployee()">離職処理する</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="loading" class="loading">読み込み中...</div>
   <div id="toast" class="toast"></div>
 
@@ -1213,6 +1417,8 @@
     const STORAGE_USER_KEY = 'employee_management_user';
 
     let currentUser = null;
+    let currentDetailEmployee = null;
+
     let masterData = {
       companies: [],
       partnerCompanies: [],
@@ -1413,19 +1619,26 @@
     function renderPartnerSelects() {
       const companySelect = document.getElementById('partnerCompany');
       const departmentSelect = document.getElementById('partnerDepartment');
+      const editCompanySelect = document.getElementById('editPartnerCompany');
+      const editDepartmentSelect = document.getElementById('editPartnerDepartment');
 
       const partnerCompanies = masterData.partnerCompanies || [];
       const departments = masterData.departments || [];
 
-      companySelect.innerHTML = '<option value="">選択してください</option>' +
+      const companyOptions = '<option value="">選択してください</option>' +
         partnerCompanies.map(company => {
           return `<option value="${escapeAttr(company.companyName)}">${escapeHtml(company.companyName)}</option>`;
         }).join('');
 
-      departmentSelect.innerHTML = '<option value="">選択してください</option>' +
+      const departmentOptions = '<option value="">選択してください</option>' +
         departments.map(dept => {
           return `<option value="${escapeAttr(dept.departmentName)}">${escapeHtml(dept.departmentName)}</option>`;
         }).join('');
+
+      companySelect.innerHTML = companyOptions;
+      departmentSelect.innerHTML = departmentOptions;
+      editCompanySelect.innerHTML = companyOptions;
+      editDepartmentSelect.innerHTML = departmentOptions;
     }
 
     async function loadDashboard() {
@@ -1548,6 +1761,7 @@
           return;
         }
 
+        currentDetailEmployee = result.data;
         renderEmployeeDetail(result.data);
         openDrawer();
 
@@ -1618,7 +1832,8 @@
         `
         : `
           <div class="drawer-actions">
-            <button class="btn btn-primary btn-full" onclick="showComingSoon('協力従業員編集')">👥 協力従業員編集</button>
+            <button class="btn btn-primary btn-full" onclick="openPartnerEditModal()">👥 協力従業員編集</button>
+            <button class="btn btn-danger-outline btn-full" onclick="openPartnerRetireModal()">退職・離職処理</button>
           </div>
         `;
 
@@ -1639,6 +1854,7 @@
           ${detailRow('電話番号', data.phone)}
           ${detailRow('メールアドレス', data.email)}
           ${detailRow('ステータス', data.status)}
+          ${data.type === '協力' ? detailRow('備考', data.note || '') : ''}
         </div>
 
         ${paidLeaveBlock}
@@ -1755,6 +1971,173 @@
       document.getElementById('partnerNote').value = '';
     }
 
+    function openPartnerEditModal() {
+      if (!currentDetailEmployee || currentDetailEmployee.type !== '協力') {
+        toast('協力従業員の詳細を開いてください。');
+        return;
+      }
+
+      const data = currentDetailEmployee;
+
+      document.getElementById('editPartnerEmployeeId').value = data.employeeId || '';
+      document.getElementById('editPartnerEmployeeIdDisplay').value = data.employeeId || '';
+      document.getElementById('editPartnerStatus').value = data.status || '在籍';
+      document.getElementById('editPartnerName').value = data.name || '';
+      document.getElementById('editPartnerKana').value = data.kana || '';
+      document.getElementById('editPartnerCompany').value = data.company || '';
+      document.getElementById('editPartnerDepartment').value = data.department || '';
+      document.getElementById('editPartnerStartDate').value = toInputDate(data.joinDate);
+      document.getElementById('editPartnerEndDate').value = toInputDate(data.retireDate);
+      document.getElementById('editPartnerBirthDate').value = toInputDate(data.birthDate);
+      document.getElementById('editPartnerGender').value = data.gender || '';
+      document.getElementById('editPartnerPhone').value = data.phone || '';
+      document.getElementById('editPartnerEmail').value = data.email || '';
+      document.getElementById('editPartnerNote').value = data.note || '';
+
+      document.getElementById('partnerEditModalBackdrop').classList.add('show');
+    }
+
+    function closePartnerEditModal() {
+      document.getElementById('partnerEditModalBackdrop').classList.remove('show');
+    }
+
+    async function updatePartnerEmployee() {
+      const payload = {
+        employeeId: document.getElementById('editPartnerEmployeeId').value.trim(),
+        name: document.getElementById('editPartnerName').value.trim(),
+        kana: document.getElementById('editPartnerKana').value.trim(),
+        company: document.getElementById('editPartnerCompany').value.trim(),
+        department: document.getElementById('editPartnerDepartment').value.trim(),
+        startDate: document.getElementById('editPartnerStartDate').value.trim(),
+        endDate: document.getElementById('editPartnerEndDate').value.trim(),
+        birthDate: document.getElementById('editPartnerBirthDate').value.trim(),
+        gender: document.getElementById('editPartnerGender').value.trim(),
+        phone: document.getElementById('editPartnerPhone').value.trim(),
+        email: document.getElementById('editPartnerEmail').value.trim(),
+        status: document.getElementById('editPartnerStatus').value.trim(),
+        note: document.getElementById('editPartnerNote').value.trim()
+      };
+
+      if (!payload.employeeId) {
+        toast('協力従業員IDが取得できません。');
+        return;
+      }
+
+      if (!payload.name) {
+        toast('氏名を入力してください。');
+        return;
+      }
+
+      if (!payload.company) {
+        toast('所属企業を選択してください。');
+        return;
+      }
+
+      if (!payload.department) {
+        toast('配属先を選択してください。');
+        return;
+      }
+
+      if (!payload.startDate) {
+        toast('協力開始日を入力してください。');
+        return;
+      }
+
+      const ok = confirm(`協力従業員「${payload.name}」の情報を更新します。よろしいですか？`);
+      if (!ok) return;
+
+      showLoading();
+
+      try {
+        const result = await api('updatePartnerEmployee', payload);
+
+        if (!result.success) {
+          toast(result.message || '協力従業員情報の更新に失敗しました。');
+          return;
+        }
+
+        toast(result.message || '協力従業員情報を更新しました。');
+        closePartnerEditModal();
+
+        await loadDashboard();
+        await searchEmployees();
+        await openEmployeeDetail(payload.employeeId, 'partner');
+
+      } catch (err) {
+        console.error(err);
+        toast('協力従業員編集で通信エラーが発生しました。');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function openPartnerRetireModal() {
+      if (!currentDetailEmployee || currentDetailEmployee.type !== '協力') {
+        toast('協力従業員の詳細を開いてください。');
+        return;
+      }
+
+      const data = currentDetailEmployee;
+
+      document.getElementById('retirePartnerEmployeeId').value = data.employeeId || '';
+      document.getElementById('retirePartnerName').value = `${data.name || ''}（${data.employeeId || ''}）`;
+      document.getElementById('retirePartnerDate').value = todayInputDate();
+      document.getElementById('retirePartnerNote').value = '';
+
+      document.getElementById('partnerRetireModalBackdrop').classList.add('show');
+    }
+
+    function closePartnerRetireModal() {
+      document.getElementById('partnerRetireModalBackdrop').classList.remove('show');
+    }
+
+    async function retirePartnerEmployee() {
+      const payload = {
+        employeeId: document.getElementById('retirePartnerEmployeeId').value.trim(),
+        retireDate: document.getElementById('retirePartnerDate').value.trim(),
+        note: document.getElementById('retirePartnerNote').value.trim()
+      };
+
+      if (!payload.employeeId) {
+        toast('協力従業員IDが取得できません。');
+        return;
+      }
+
+      if (!payload.retireDate) {
+        toast('離職日を入力してください。');
+        return;
+      }
+
+      const name = currentDetailEmployee ? currentDetailEmployee.name : payload.employeeId;
+
+      const ok = confirm(`協力従業員「${name}」を離職処理します。よろしいですか？`);
+      if (!ok) return;
+
+      showLoading();
+
+      try {
+        const result = await api('retirePartnerEmployee', payload);
+
+        if (!result.success) {
+          toast(result.message || '離職処理に失敗しました。');
+          return;
+        }
+
+        toast(result.message || '離職処理しました。');
+        closePartnerRetireModal();
+
+        await loadDashboard();
+        await searchEmployees();
+        await openEmployeeDetail(payload.employeeId, 'partner');
+
+      } catch (err) {
+        console.error(err);
+        toast('離職処理で通信エラーが発生しました。');
+      } finally {
+        hideLoading();
+      }
+    }
+
     function openDrawer() {
       document.getElementById('drawerBackdrop').classList.add('show');
       document.getElementById('detailDrawer').classList.add('show');
@@ -1837,6 +2220,28 @@
       const num = Number(value || 0);
       if (isNaN(num)) return '-';
       return num.toLocaleString('ja-JP') + '円';
+    }
+
+    function toInputDate(value) {
+      if (!value) return '';
+
+      const s = String(value).trim();
+      if (!s || s === '—') return '';
+
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
+      const m = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+      if (!m) return '';
+
+      return `${m[1]}-${String(m[2]).padStart(2, '0')}-${String(m[3]).padStart(2, '0')}`;
+    }
+
+    function todayInputDate() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
     }
 
     function escapeHtml(value) {
