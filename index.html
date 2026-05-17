@@ -78,7 +78,13 @@
         timecardPdfBytes = await file.arrayBuffer();
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-        const loadingTask = pdfjsLib.getDocument({ data: timecardPdfBytes.slice(0) });
+        const loadingTask = pdfjsLib.getDocument({
+          data: timecardPdfBytes.slice(0),
+          cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+          cMapPacked: true,
+          standardFontDataUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/standard_fonts/',
+          useSystemFonts: true
+        });
         const pdf = await loadingTask.promise;
 
         timecardPageResults = [];
