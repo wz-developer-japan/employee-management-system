@@ -64,7 +64,30 @@
     function extractTimecardEmployeeCode(items,pageText){const monthIndex=pageText.indexOf('月');if(monthIndex>=0){const after=pageText.slice(monthIndex+1,monthIndex+30);const match=after.match(/[0-9]{2,5}/);if(match)return match[0]}const sorted=[...items].sort((a,b)=>b.y-a.y||a.x-b.x);const tokens=sorted.slice(0,80).map(i=>String(i.text||'').trim());const nums=[];tokens.forEach(t=>{const found=t.match(/[0-9]{2,5}/g)||[];found.forEach(n=>{if(!['2026','2025','2024','2027','04','05','01','00'].includes(n))nums.push(n)})});return nums.length?nums[nums.length-1]:''}
     function extractTimecardMonth(pageText){const yIndex=pageText.indexOf('年');const mIndex=pageText.indexOf('月',yIndex);if(yIndex>1&&mIndex>yIndex){const before=pageText.slice(Math.max(0,yIndex-4),yIndex);const after=pageText.slice(yIndex+1,mIndex).trim();if(before.length===4&&after){return before+'-'+String(after).padStart(2,'0')}}return''}
     function extractTimecardDepartment(pageText){const start=pageText.indexOf('三重(');if(start<0)return'';const end=pageText.indexOf(')',start);if(end<0)return'';return pageText.slice(start+3,end).trim()}
-    function extractTimecardEmployeeName(items,pageText){const direct=pageText.match(/請負（1ヶ月変形労働）\s*([一-龥ぁ-んァ-ヶー]{1,8})\s+([一-龥ぁ-んァ-ヶー]{1,8})\s*：/);if(direct)return normalizeDisplayName(direct[1]+' '+direct[2]);const compactText=normalizePersonName(pageText);for(const known of Object.keys(partnerNameCompanyMap)){if(compactText.includes(known))return known}const sorted=[...items].sort((a,b)=>b.y-a.y||a.x-b.x);const idx=sorted.findIndex(item=>String(item.text||'').includes('請負'));if(idx>=0){for(let i=idx+1;i<Math.min(idx+8,sorted.length);i++){const s=String(sorted[i].text||'').trim();if(isLikelyJapaneseName(s))return normalizeDisplayName(s)}}for(const item of sorted.slice(0,120)){const s=String(item.text||'').trim();if(isLikelyJapaneseName(s))return normalizeDisplayName(s)}return''}
+    function extractTimecardEmployeeName(items,pageText){
+      const compactText=normalizePersonName(pageText);
+
+      for(const known of Object.keys(partnerNameCompanyMap)){
+        if(compactText.includes(known)) return known;
+      }
+
+      const sorted=[...items].sort((a,b)=>b.y-a.y||a.x-b.x);
+
+      const contractorIndex=sorted.findIndex(item=>String(item.text||'').includes('請負'));
+      if(contractorIndex>=0){
+        for(let i=contractorIndex+1;i<Math.min(contractorIndex+12,sorted.length);i++){
+          const s=String(sorted[i].text||'').trim();
+          if(isLikelyJapaneseName(s)) return normalizeDisplayName(s);
+        }
+      }
+
+      for(const item of sorted.slice(0,150)){
+        const s=String(item.text||'').trim();
+        if(isLikelyJapaneseName(s)) return normalizeDisplayName(s);
+      }
+
+      return '';
+    }
     function isLikelyJapaneseName(s){if(!s)return false;const ng=['三重','請負','出勤','退勤','丸め','株式会社','KING','Timecard','generated','ETCH','DDP','EPI','月','年','日'];if(ng.some(x=>s.includes(x)))return false;let jp=0;for(const ch of s){const code=ch.charCodeAt(0);if((code>=0x3040&&code<=0x30ff)||(code>=0x4e00&&code<=0x9fff)||ch===' '||ch==='　')jp++;else return false}return jp>=2&&jp<=14}
     function normalizeEmployeeCode(s){const digits=String(s||'').replace(/[^0-9]/g,'');if(!digits)return'';return String(Number(digits))}function normalizePersonName(s){return String(s||'').replaceAll(' ','').replaceAll('　','').replaceAll('﨑','崎').replaceAll('髙','高').replaceAll('佂','征').trim()}
     function normalizeDisplayName(s){return String(s||'').replaceAll('　',' ').trim()}
