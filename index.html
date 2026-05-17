@@ -65,25 +65,25 @@
     function extractTimecardMonth(pageText){const yIndex=pageText.indexOf('年');const mIndex=pageText.indexOf('月',yIndex);if(yIndex>1&&mIndex>yIndex){const before=pageText.slice(Math.max(0,yIndex-4),yIndex);const after=pageText.slice(yIndex+1,mIndex).trim();if(before.length===4&&after){return before+'-'+String(after).padStart(2,'0')}}return''}
     function extractTimecardDepartment(pageText){const start=pageText.indexOf('三重(');if(start<0)return'';const end=pageText.indexOf(')',start);if(end<0)return'';return pageText.slice(start+3,end).trim()}
     function extractTimecardEmployeeName(items,pageText){
-      const compactText=normalizePersonName(pageText);
+      const compactText = normalizePersonName(pageText);
 
-      for(const known of Object.keys(partnerNameCompanyMap)){
-        if(compactText.includes(known)) return known;
+      for (const known of Object.keys(partnerNameCompanyMap)) {
+        if (compactText.includes(known)) return known;
       }
 
-      const sorted=[...items].sort((a,b)=>b.y-a.y||a.x-b.x);
+      const sorted = [...items].sort((a, b) => b.y - a.y || a.x - b.x);
 
-      const contractorIndex=sorted.findIndex(item=>String(item.text||'').includes('請負'));
-      if(contractorIndex>=0){
-        for(let i=contractorIndex+1;i<Math.min(contractorIndex+12,sorted.length);i++){
-          const s=String(sorted[i].text||'').trim();
-          if(isLikelyJapaneseName(s)) return normalizeDisplayName(s);
+      const contractorIndex = sorted.findIndex(item => String(item.text || '').includes('請負'));
+      if (contractorIndex >= 0) {
+        for (let i = contractorIndex + 1; i < Math.min(contractorIndex + 12, sorted.length); i++) {
+          const s = String(sorted[i].text || '').trim();
+          if (isLikelyJapaneseName(s)) return normalizeDisplayName(s);
         }
       }
 
-      for(const item of sorted.slice(0,150)){
-        const s=String(item.text||'').trim();
-        if(isLikelyJapaneseName(s)) return normalizeDisplayName(s);
+      for (const item of sorted.slice(0, 150)) {
+        const s = String(item.text || '').trim();
+        if (isLikelyJapaneseName(s)) return normalizeDisplayName(s);
       }
 
       return '';
