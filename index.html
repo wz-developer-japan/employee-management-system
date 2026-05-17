@@ -67,27 +67,49 @@
     function extractTimecardEmployeeName(items,pageText){
       const compactText = normalizePersonName(pageText);
 
-      for (const known of Object.keys(partnerNameCompanyMap)) {
-        if (compactText.includes(known)) return known;
-      }
-
-      const sorted = [...items].sort((a, b) => b.y - a.y || a.x - b.x);
-
-      const contractorIndex = sorted.findIndex(item => String(item.text || '').includes('請負'));
-      if (contractorIndex >= 0) {
-        for (let i = contractorIndex + 1; i < Math.min(contractorIndex + 12, sorted.length); i++) {
-          const s = String(sorted[i].text || '').trim();
-          if (isLikelyJapaneseName(s)) return normalizeDisplayName(s);
+      const knownNames = Object.keys(partnerNameCompanyMap);
+      for (let i = 0; i < knownNames.length; i++) {
+        const known = knownNames[i];
+        if (compactText.indexOf(known) >= 0) {
+          return known;
         }
       }
 
-      for (const item of sorted.slice(0, 150)) {
-        const s = String(item.text || '').trim();
-        if (isLikelyJapaneseName(s)) return normalizeDisplayName(s);
+      const sorted = items.slice().sort(function(a,b){
+        if (b.y !== a.y) return b.y - a.y;
+        return a.x - b.x;
+      });
+
+      let contractorIndex = -1;
+      for (let i = 0; i < sorted.length; i++) {
+        const t = String(sorted[i].text || '');
+        if (t.indexOf('請負') >= 0) {
+          contractorIndex = i;
+          break;
+        }
+      }
+
+      if (contractorIndex >= 0) {
+        const end = Math.min(contractorIndex + 12, sorted.length);
+        for (let i = contractorIndex + 1; i < end; i++) {
+          const s = String(sorted[i].text || '').trim();
+          if (isLikelyJapaneseName(s)) {
+            return normalizeDisplayName(s);
+          }
+        }
+      }
+
+      const limit = Math.min(150, sorted.length);
+      for (let i = 0; i < limit; i++) {
+        const s = String(sorted[i].text || '').trim();
+        if (isLikelyJapaneseName(s)) {
+          return normalizeDisplayName(s);
+        }
       }
 
       return '';
     }
+
     function isLikelyJapaneseName(s){if(!s)return false;const ng=['三重','請負','出勤','退勤','丸め','株式会社','KING','Timecard','generated','ETCH','DDP','EPI','月','年','日'];if(ng.some(x=>s.includes(x)))return false;let jp=0;for(const ch of s){const code=ch.charCodeAt(0);if((code>=0x3040&&code<=0x30ff)||(code>=0x4e00&&code<=0x9fff)||ch===' '||ch==='　')jp++;else return false}return jp>=2&&jp<=14}
     function normalizeEmployeeCode(s){const digits=String(s||'').replace(/[^0-9]/g,'');if(!digits)return'';return String(Number(digits))}function normalizePersonName(s){return String(s||'').replaceAll(' ','').replaceAll('　','').replaceAll('﨑','崎').replaceAll('髙','高').replaceAll('佂','征').trim()}
     function normalizeDisplayName(s){return String(s||'').replaceAll('　',' ').trim()}
