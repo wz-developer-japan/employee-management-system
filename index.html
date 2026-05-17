@@ -52,7 +52,7 @@
 
   <script>
     const GAS_API_URL='https://script.google.com/macros/s/AKfycbxcDMtCi-MJb62ypIf2kLhH1JPf9MKdlkJJlKRPfmz4B84FZVAHwOPBFu4K6FLw--ZvfA/exec';
-    const STORAGE_TOKEN_KEY='employee_management_token';const STORAGE_USER_KEY='employee_management_user';let currentUser=null;let currentDetailEmployee=null;let currentPaidLeaveEmployee=null;let masterData={companies:[],partnerCompanies:[],departments:[]};let masterManagementData={companies:[],departments:[],users:[]};let currentAdvanceRows=[];let currentPaidLeaveAlertRows=[];let timecardPdfBytes=null;let timecardOriginalFileName='';let timecardPageResults=[];let timecardCompanyGroups={};let partnerNameCompanyMap={};let employeeCodeInfoMap={};let timecardFirstOcrPreviewUrl='';
+    const STORAGE_TOKEN_KEY='employee_management_token';const STORAGE_USER_KEY='employee_management_user';let currentUser=null;let currentDetailEmployee=null;let currentPaidLeaveEmployee=null;let masterData={companies:[],partnerCompanies:[],departments:[]};let masterManagementData={companies:[],departments:[],users:[]};let currentAdvanceRows=[];let currentPaidLeaveAlertRows=[];let timecardPdfBytes=null;let timecardOriginalFileName='';let timecardPageResults=[];let timecardCompanyGroups={};let partnerNameCompanyMap={};let employeeCodeInfoMap={};let timecardFirstOcrPreviewUrl='';let timecardOcrDebugLog='';
     window.addEventListener('DOMContentLoaded',async()=>{const token=localStorage.getItem(STORAGE_TOKEN_KEY);const userJson=localStorage.getItem(STORAGE_USER_KEY);if(userJson){try{currentUser=JSON.parse(userJson)}catch(e){currentUser=null}}if(token){const ok=await checkSession();if(ok){showApp();await initialLoad()}else showLogin()}else showLogin()});
     async function initialLoad(){await loadMasterData();await buildTimecardEmployeeMaps();await loadDashboard();await searchEmployees()}async function api(action,payload={}){const token=localStorage.getItem(STORAGE_TOKEN_KEY);const response=await fetch(GAS_API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,token,...payload})});const text=await response.text();try{return JSON.parse(text)}catch(e){console.error(text);throw new Error('APIの応答をJSONとして読み取れませんでした。')}}function showLoading(){document.getElementById('loading').classList.add('show')}function hideLoading(){document.getElementById('loading').classList.remove('show')}function toast(message){const el=document.getElementById('toast');el.textContent=message;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600)}function showLogin(){document.getElementById('loginPage').classList.remove('hidden');document.getElementById('appPage').classList.add('hidden')}function showApp(){document.getElementById('loginPage').classList.add('hidden');document.getElementById('appPage').classList.remove('hidden');if(currentUser)document.getElementById('loginUserName').textContent=currentUser.name||currentUser.userId||'ログイン中'}
     async function login(){const userId=document.getElementById('loginUserId').value.trim(),password=document.getElementById('loginPassword').value,msg=document.getElementById('loginMessage');msg.textContent='';if(!userId||!password){msg.textContent='ユーザーIDとパスワードを入力してください。';return}showLoading();try{const result=await api('login',{userId,password});if(!result.success){msg.textContent=result.message||'ログインに失敗しました。';return}localStorage.setItem(STORAGE_TOKEN_KEY,result.token);localStorage.setItem(STORAGE_USER_KEY,JSON.stringify(result.user));currentUser=result.user;showApp();toast('ログインしました。');await initialLoad()}catch(err){console.error(err);msg.textContent='通信エラーが発生しました。GASのデプロイ設定を確認してください。'}finally{hideLoading()}}async function checkSession(){try{const result=await api('checkSession');if(result.success){currentUser=result.user;localStorage.setItem(STORAGE_USER_KEY,JSON.stringify(result.user));return true}localStorage.removeItem(STORAGE_TOKEN_KEY);localStorage.removeItem(STORAGE_USER_KEY);return false}catch(err){console.error(err);localStorage.removeItem(STORAGE_TOKEN_KEY);localStorage.removeItem(STORAGE_USER_KEY);return false}}async function logout(){showLoading();try{await api('logout')}catch(err){console.error(err)}finally{localStorage.removeItem(STORAGE_TOKEN_KEY);localStorage.removeItem(STORAGE_USER_KEY);currentUser=null;hideLoading();showLogin()}}
@@ -83,6 +83,8 @@
 
         timecardPageResults = [];
         timecardCompanyGroups = {};
+        timecardFirstOcrPreviewUrl = '';
+        timecardOcrDebugLog = '';
 
         for (let pageNo = 1; pageNo <= pdf.numPages; pageNo++) {
           toast('PDF解析中：' + pageNo + ' / ' + pdf.numPages + ' ページ');
@@ -98,12 +100,22 @@
           const pageText = items.map(function(item){ return item.text; }).join(' ');
           let info = extractTimecardPageInfo(items, pageText, pageNo);
 
-          const ocrText = await ocrTimecardHeader(page, pageNo);
-          const ocrName = extractNameFromOcrText(ocrText);
-          if (ocrName) {
-            info = applyTimecardNameToInfo(info, ocrName, ocrText);
-          } else {
-            info.ocrText = ocrText || '';
+          timecardOcrDebugLog += 'page ' + pageNo + ': OCR開始' + String.fromCharCode(10);
+          try {
+            const ocrText = await ocrTimecardHeader(page, pageNo);
+            timecardOcrDebugLog += 'page ' + pageNo + ': OCR文字数=' + String(ocrText || '').length + String.fromCharCode(10);
+            const ocrName = extractNameFromOcrText(ocrText);
+            if (ocrName) {
+              timecardOcrDebugLog += 'page ' + pageNo + ': OCR氏名=' + ocrName + String.fromCharCode(10);
+              info = applyTimecardNameToInfo(info, ocrName, ocrText);
+            } else {
+              timecardOcrDebugLog += 'page ' + pageNo + ': OCR氏名取得なし' + String.fromCharCode(10);
+              info.ocrText = ocrText || '';
+            }
+          } catch (ocrError) {
+            console.error(ocrError);
+            timecardOcrDebugLog += 'page ' + pageNo + ': OCRエラー=' + (ocrError && ocrError.message ? ocrError.message : String(ocrError)) + String.fromCharCode(10);
+            info.ocrText = 'OCRエラー: ' + (ocrError && ocrError.message ? ocrError.message : String(ocrError));
           }
 
           timecardPageResults.push(info);
@@ -435,6 +447,8 @@
           debug += (first.text || '').slice(0, 1200);
           debug += String.fromCharCode(10) + String.fromCharCode(10) + '【OCRテキスト】' + String.fromCharCode(10);
           debug += (first.ocrText || 'OCR未実行または取得なし').slice(0, 1200);
+          debug += String.fromCharCode(10) + String.fromCharCode(10) + '【OCR実行ログ】' + String.fromCharCode(10);
+          debug += (timecardOcrDebugLog || 'OCRログなし').slice(0, 2000);
         } else {
           debug = '1ページ目のテキストを取得できませんでした。';
         }
@@ -443,7 +457,7 @@
       const total=timecardPageResults.length;const human=timecardPageResults.filter(r=>r.company==='HumanNexus'&&r.status==='OK').length;const unknown=timecardPageResults.filter(r=>r.status!=='OK').length;const partner=timecardPageResults.filter(r=>r.type==='協力'&&r.status==='OK').length;timecardTotalPages.textContent=total;timecardHumanCount.textContent=human;timecardPartnerCount.textContent=partner;timecardUnknownCount.textContent=unknown;if(!timecardPageResults.length){timecardResultBody.innerHTML='<tr><td colspan="7" class="empty">PDFを解析すると結果が表示されます。</td></tr>';timecardCompanyBody.innerHTML='<tr><td colspan="4" class="empty">PDF解析後に表示されます。</td></tr>';return}timecardResultBody.innerHTML=timecardPageResults.map(row=>`<tr><td>${row.pageNo}</td><td>${escapeHtml(row.employeeCode||'')}</td><td>${escapeHtml(row.name||'未取得')}</td><td>${escapeHtml(row.company)}</td><td><span class="badge ${row.type==='協力'?'badge-teal':'badge-blue'}">${escapeHtml(row.type)}</span></td><td>${escapeHtml(row.department||'')}</td><td><span class="badge ${row.status==='OK'?'badge-success':'badge-warning'}">${escapeHtml(row.status)}</span></td></tr>`).join('');const companies=Object.keys(timecardCompanyGroups).sort((a,b)=>a==='HumanNexus'?-1:b==='HumanNexus'?1:a.localeCompare(b,'ja'));timecardCompanyBody.innerHTML=companies.map(company=>{const rows=timecardCompanyGroups[company]||[];const names=rows.map(r=>r.name||`ページ${r.pageNo}`).join('、');return `<tr><td>${escapeHtml(company)}</td><td>${rows.length}ページ</td><td style="white-space:normal;min-width:320px;">${escapeHtml(names)}</td><td><button class="btn btn-sm btn-primary" onclick="downloadTimecardCompanyPdf('${escapeAttr(company)}')">PDF出力</button></td></tr>`}).join('')}
     async function downloadTimecardCompanyPdf(company){if(!timecardPdfBytes){toast('先にPDFを解析してください。');return}const rows=timecardCompanyGroups[company]||[];if(!rows.length){toast('対象ページがありません。');return}showLoading();try{const src=await PDFLib.PDFDocument.load(timecardPdfBytes.slice(0));const out=await PDFLib.PDFDocument.create();const indices=rows.map(r=>r.pageNo-1);const copied=await out.copyPages(src,indices);copied.forEach(p=>out.addPage(p));const bytes=await out.save();const month=(timecardTargetMonth.value||extractMonthFromFileName(timecardOriginalFileName)||'対象月未設定').replace('-','年')+'月分';downloadBlob(new Blob([bytes],{type:'application/pdf'}),sanitizeFileName(month+'_'+company+'_タイムカード.pdf'));toast(company+' のPDFを出力しました。')}catch(e){console.error(e);toast('PDF出力でエラーが発生しました。')}finally{hideLoading()}}
     async function downloadAllTimecardSplitPdfs(){const companies=Object.keys(timecardCompanyGroups);if(!companies.length){toast('先にPDFを解析してください。');return}for(const company of companies){await downloadTimecardCompanyPdf(company)}}
-    function clearTimecardSplit(){timecardPdfFile.value='';timecardPdfBytes=null;timecardOriginalFileName='';timecardPageResults=[];timecardCompanyGroups={};timecardFirstOcrPreviewUrl='';timecardTotalPages.textContent='-';timecardHumanCount.textContent='-';timecardPartnerCount.textContent='-';timecardUnknownCount.textContent='-';timecardResultBody.innerHTML='<tr><td colspan="7" class="empty">PDFを解析すると結果が表示されます。</td></tr>';timecardCompanyBody.innerHTML='<tr><td colspan="4" class="empty">PDF解析後に表示されます。</td></tr>';if(document.getElementById('timecardDebugText'))timecardDebugText.textContent='PDF解析後に表示されます。';if(document.getElementById('timecardOcrPreview'))timecardOcrPreview.removeAttribute('src')}
+    function clearTimecardSplit(){timecardPdfFile.value='';timecardPdfBytes=null;timecardOriginalFileName='';timecardPageResults=[];timecardCompanyGroups={};timecardFirstOcrPreviewUrl='';timecardOcrDebugLog='';timecardTotalPages.textContent='-';timecardHumanCount.textContent='-';timecardPartnerCount.textContent='-';timecardUnknownCount.textContent='-';timecardResultBody.innerHTML='<tr><td colspan="7" class="empty">PDFを解析すると結果が表示されます。</td></tr>';timecardCompanyBody.innerHTML='<tr><td colspan="4" class="empty">PDF解析後に表示されます。</td></tr>';if(document.getElementById('timecardDebugText'))timecardDebugText.textContent='PDF解析後に表示されます。';if(document.getElementById('timecardOcrPreview'))timecardOcrPreview.removeAttribute('src')}
     function extractMonthFromFileName(name){const s=String(name||'');const y=s.indexOf('20');if(y<0)return'';const year=s.slice(y,y+4);let month='';for(let i=y+4;i<s.length;i++){const ch=s[i];if(ch>='0'&&ch<='9')month+=ch;else if(month)break}if(year.length===4&&month)return year+'-'+String(month).padStart(2,'0');return''}
     function sanitizeFileName(name){
       let s = String(name || '');
