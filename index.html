@@ -124,9 +124,13 @@
       const result = [];
       let current = '';
       const s = String(text || '');
+
       for (let i = 0; i < s.length; i++) {
         const ch = s.charAt(i);
-        if (ch === ' ' || ch === '　' || ch === '\n' || ch === '\r' || ch === '\t') {
+        const code = ch.charCodeAt(0);
+        const isSeparator = (ch === ' ' || ch === '　' || code === 10 || code === 13 || code === 9);
+
+        if (isSeparator) {
           if (current) {
             result.push(current);
             current = '';
@@ -135,6 +139,7 @@
           current += ch;
         }
       }
+
       if (current) result.push(current);
       return result;
     }
