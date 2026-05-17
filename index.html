@@ -179,7 +179,19 @@
     async function downloadAllTimecardSplitPdfs(){const companies=Object.keys(timecardCompanyGroups);if(!companies.length){toast('先にPDFを解析してください。');return}for(const company of companies){await downloadTimecardCompanyPdf(company)}}
     function clearTimecardSplit(){timecardPdfFile.value='';timecardPdfBytes=null;timecardOriginalFileName='';timecardPageResults=[];timecardCompanyGroups={};timecardTotalPages.textContent='-';timecardHumanCount.textContent='-';timecardPartnerCount.textContent='-';timecardUnknownCount.textContent='-';timecardResultBody.innerHTML='<tr><td colspan="7" class="empty">PDFを解析すると結果が表示されます。</td></tr>';timecardCompanyBody.innerHTML='<tr><td colspan="4" class="empty">PDF解析後に表示されます。</td></tr>'}
     function extractMonthFromFileName(name){const s=String(name||'');const y=s.indexOf('20');if(y<0)return'';const year=s.slice(y,y+4);let month='';for(let i=y+4;i<s.length;i++){const ch=s[i];if(ch>='0'&&ch<='9')month+=ch;else if(month)break}if(year.length===4&&month)return year+'-'+String(month).padStart(2,'0');return''}
-    function sanitizeFileName(name){return String(name).replaceAll('/','_').replaceAll('\','_').replaceAll(':','_').replaceAll('*','_').replaceAll('?','_').replaceAll('"','_').replaceAll('<','_').replaceAll('>','_').replaceAll('|','_')}
+    function sanitizeFileName(name){
+      let s = String(name || '');
+      s = s.replaceAll('/', '_');
+      s = s.split('\\\\').join('_');
+      s = s.replaceAll(':', '_');
+      s = s.replaceAll('*', '_');
+      s = s.replaceAll('?', '_');
+      s = s.replaceAll('"', '_');
+      s = s.replaceAll('<', '_');
+      s = s.replaceAll('>', '_');
+      s = s.replaceAll('|', '_');
+      return s;
+    }
     function downloadBlob(blob,filename){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url)}
 
     async function loadPaidLeaveAlertList(){showLoading();try{const r=await api('getPaidLeaveList',{keyword:paidAlertKeyword.value.trim(),onlyActive:paidAlertOnlyActive.value});if(!r.success){toast(r.message||'有休アラートの取得に失敗しました。');return}let rows=r.data||[];const type=paidAlertType.value;const grantRows=rows.filter(row=>row.grantDue);const expireRows=rows.filter(row=>row.expireSoon);const lowRows=rows.filter(row=>Number(row.totalRemain||0)<=3);paidAlertGrantCount.textContent=grantRows.length+'名';paidAlertExpireCount.textContent=expireRows.length+'件';paidAlertLowCount.textContent=lowRows.length+'名';if(type==='付与対象')rows=grantRows;else if(type==='消滅予定')rows=expireRows;else if(type==='残数少')rows=lowRows;currentPaidLeaveAlertRows=rows;renderPaidLeaveAlertList(rows)}catch(e){console.error(e);toast('有休アラート取得で通信エラーが発生しました。')}finally{hideLoading()}}
