@@ -98,14 +98,12 @@
           const pageText = items.map(function(item){ return item.text; }).join(' ');
           let info = extractTimecardPageInfo(items, pageText, pageNo);
 
-          if (!info.name) {
-            const ocrText = await ocrTimecardHeader(page, pageNo);
-            const ocrName = extractNameFromOcrText(ocrText);
-            if (ocrName) {
-              info = applyTimecardNameToInfo(info, ocrName, ocrText);
-            } else {
-              info.ocrText = ocrText;
-            }
+          const ocrText = await ocrTimecardHeader(page, pageNo);
+          const ocrName = extractNameFromOcrText(ocrText);
+          if (ocrName) {
+            info = applyTimecardNameToInfo(info, ocrName, ocrText);
+          } else {
+            info.ocrText = ocrText || '';
           }
 
           timecardPageResults.push(info);
