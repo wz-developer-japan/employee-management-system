@@ -47,6 +47,7 @@
   <div id="passwordResetModalBackdrop" class="modal-backdrop"><div class="modal small"><div class="modal-header"><div class="modal-title">パスワード再設定</div><button class="close-btn" onclick="closePasswordResetModal()">×</button></div><div class="modal-body"><input id="resetPasswordUserId" type="hidden" /><div class="form-group"><label class="mini-label">対象ユーザー</label><input id="resetPasswordTarget" class="input" type="text" disabled /></div><div class="form-group"><label class="mini-label">新しいパスワード<span class="required">*</span></label><input id="resetPasswordValue" class="input" type="password" placeholder="6文字以上" /></div><div class="button-row"><button class="btn btn-outline" onclick="closePasswordResetModal()">キャンセル</button><button class="btn btn-primary" onclick="resetLoginUserPassword()">再設定する</button></div></div></div></div>
   <div id="partnerEditModalBackdrop" class="modal-backdrop"><div class="modal"><div class="modal-header"><div class="modal-title">協力従業員編集</div><button class="close-btn" onclick="closePartnerEditModal()">×</button></div><div class="modal-body"><input id="editPartnerEmployeeId" type="hidden" /><div class="form-grid"><div><label class="mini-label">協力従業員ID</label><input id="editPartnerEmployeeIdDisplay" class="input" type="text" disabled /></div><div><label class="mini-label">ステータス</label><select id="editPartnerStatus" class="select"><option value="在籍">在籍</option><option value="休職中">休職中</option><option value="離職">離職</option></select></div><div><label class="mini-label">氏名<span class="required">*</span></label><input id="editPartnerName" class="input" type="text" /></div><div><label class="mini-label">氏名カナ</label><input id="editPartnerKana" class="input" type="text" /></div><div><label class="mini-label">所属企業<span class="required">*</span></label><select id="editPartnerCompany" class="select"></select></div><div><label class="mini-label">配属先<span class="required">*</span></label><select id="editPartnerDepartment" class="select"></select></div><div><label class="mini-label">協力開始日<span class="required">*</span></label><input id="editPartnerStartDate" class="input" type="date" /></div><div><label class="mini-label">協力終了日</label><input id="editPartnerEndDate" class="input" type="date" /></div><div><label class="mini-label">生年月日</label><input id="editPartnerBirthDate" class="input" type="date" /></div><div><label class="mini-label">性別</label><select id="editPartnerGender" class="select"><option value="">選択してください</option><option value="男性">男性</option><option value="女性">女性</option><option value="その他">その他</option></select></div><div><label class="mini-label">電話番号</label><input id="editPartnerPhone" class="input" type="tel" /></div><div><label class="mini-label">メールアドレス</label><input id="editPartnerEmail" class="input" type="email" /></div><div class="full"><label class="mini-label">備考</label><textarea id="editPartnerNote" class="textarea"></textarea></div></div><div class="button-row"><button class="btn btn-outline" onclick="closePartnerEditModal()">キャンセル</button><button class="btn btn-primary" onclick="updatePartnerEmployee()">更新する</button></div></div></div></div>
   <div id="partnerRetireModalBackdrop" class="modal-backdrop"><div class="modal small"><div class="modal-header"><div class="modal-title">協力従業員 離職処理</div><button class="close-btn" onclick="closePartnerRetireModal()">×</button></div><div class="modal-body"><input id="retirePartnerEmployeeId" type="hidden" /><div class="danger-note">離職処理を行うと、ステータスが「離職」になり、協力終了日が登録されます。履歴保持のため、データ自体は削除しません。</div><div class="form-group"><label class="mini-label">対象者</label><input id="retirePartnerName" class="input" type="text" disabled /></div><div class="form-group"><label class="mini-label">離職日<span class="required">*</span></label><input id="retirePartnerDate" class="input" type="date" /></div><div class="form-group"><label class="mini-label">離職メモ</label><textarea id="retirePartnerNote" class="textarea" placeholder="必要に応じて理由やメモを入力"></textarea></div><div class="button-row"><button class="btn btn-outline" onclick="closePartnerRetireModal()">キャンセル</button><button class="btn btn-danger" onclick="retirePartnerEmployee()">離職処理する</button></div></div></div></div>
+  <div id="timecardLinkModalBackdrop" class="modal-backdrop"><div class="modal"><div class="modal-header"><div class="modal-title" id="timecardLinkModalTitle">未登録コードの紐づけ</div><button class="close-btn" onclick="closeTimecardLinkModal()">×</button></div><div class="modal-body"><div class="danger-note" id="timecardLinkNote"></div><div class="form-group"><label class="mini-label">紐づける従業員を選択<span class="required">*</span></label><select id="timecardLinkEmployeeSelect" class="select"><option value="">選択してください</option></select></div><div class="button-row"><button class="btn btn-outline" onclick="closeTimecardLinkModal()">キャンセル</button><button class="btn btn-primary" onclick="confirmTimecardLink()">紐づけて続行</button></div></div></div></div>
   <div id="loading" class="loading"><div>読み込み中...</div><div class="loading-msg" id="loadingMsg"></div></div><div id="toast" class="toast"></div>
 
   <script>
@@ -60,6 +61,7 @@
     let timecardPdfBytes=null,timecardOriginalFileName='';
     let timecardPageResults=[],timecardCompanyGroups={};
     let partnerNameCompanyMap={},employeeCodeInfoMap={};
+    let timecardLinkCallback=null;
 
     window.addEventListener('DOMContentLoaded',async()=>{
       const token=localStorage.getItem(STORAGE_TOKEN_KEY);
@@ -172,17 +174,12 @@
     async function analyzeTimecardPdf(){
       const file=timecardPdfFile.files&&timecardPdfFile.files[0];
       if(!file){toast('PDFファイルを選択してください。');return}
-
-      showLoading('PDFを読み込み中...');
+      showLoading('PDFをGASへ送信中...');
       try{
-        await buildTimecardEmployeeMaps();
         timecardOriginalFileName=file.name;
         timecardPdfBytes=await file.arrayBuffer();
         timecardPageResults=[];
         timecardCompanyGroups={};
-
-        // Base64変換
-        showLoading('PDFをGASへ送信中...');
         const uint8=new Uint8Array(timecardPdfBytes);
         let binary='';
         const chunkSize=8192;
@@ -190,75 +187,22 @@
           binary+=String.fromCharCode.apply(null,uint8.subarray(i,i+chunkSize));
         }
         const pdfBase64=btoa(binary);
-
-        // GASへOCR依頼
-        showLoading('Google Drive OCRで氏名を読み取り中...\n（30ページで1〜3分かかります）');
-        const result=await api('timecardOcrPdf',{pdfBase64,fileName:file.name});
-
+        showLoading('Google Driveで解析中...');
+        const result=await api('timecardSplit',{pdfBase64,fileName:file.name});
         if(!result.success){
-          toast(result.message||'GAS OCRに失敗しました。');
-          timecardDebugText.textContent='エラー：'+( result.message||'不明なエラー');
+          toast(result.message||'GAS処理に失敗しました。');
+          timecardDebugText.textContent='エラー：'+(result.message||'不明なエラー');
           return;
         }
-
         const pageResults=result.data.pageResults||[];
-
-        // PDF.jsでページテキスト取得（工程・月抽出用）
-        showLoading('PDFページ情報を取得中...');
-        pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        const pdf=await pdfjsLib.getDocument({
-          data:timecardPdfBytes.slice(0),
-          cMapUrl:'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
-          cMapPacked:true
-        }).promise;
-
-        const debugLines=[];
-
-        for(let i=0;i<pageResults.length;i++){
-          const ocrResult=pageResults[i];
-          const pageNo=ocrResult.pageNo;
-          const ocrName=String(ocrResult.name||'').trim();
-
-          // PDF.jsでテキスト取得（工程・月の抽出用）
-          let pageText='';
-          try{
-            const page=await pdf.getPage(pageNo);
-            const tc=await page.getTextContent();
-            pageText=(tc.items||[]).map(item=>item.str||'').join(' ');
-          }catch(e){}
-
-          const month=extractTimecardMonth(pageText);
-          if(month&&!timecardTargetMonth.value)timecardTargetMonth.value=month;
-          const department=extractTimecardDepartment(pageText);
-          const empCode=extractTimecardEmployeeCode(pageText);
-
-          let name=ocrName;
-          let company='HumanNexus';
-          let type='自社';
-          let status='OK';
-
-          if(name){
-            const normalized=normalizePersonName(name);
-            if(partnerNameCompanyMap[normalized]){
-              company=partnerNameCompanyMap[normalized];
-              type='協力';
-            }
-          }else{
-            company='未判定';type='未判定';status='未判定';
-          }
-
-          const info={pageNo,employeeCode:empCode,name,company,type,department,status,text:pageText};
-          timecardPageResults.push(info);
-          if(!timecardCompanyGroups[company])timecardCompanyGroups[company]=[];
-          timecardCompanyGroups[company].push(info);
-
-          debugLines.push('page '+pageNo+': コード='+empCode+' 氏名='+(name||'取得なし')+' → '+company);
+        const unlinked=pageResults.filter(r=>r.status==='未登録');
+        if(unlinked.length>0){
+          hideLoading();
+          await processUnlinkedCodes(unlinked,pageResults);
+          return;
         }
-
-        timecardDebugText.textContent=debugLines.join('\n');
-        renderTimecardResults();
+        buildTimecardResults(pageResults);
         toast('PDF解析が完了しました。');
-
       }catch(e){
         console.error(e);
         toast('PDF解析でエラーが発生しました：'+e.message);
@@ -266,27 +210,81 @@
       }finally{hideLoading()}
     }
 
-    function extractTimecardEmployeeCode(pageText){
-      const s=String(pageText||'');
-      const m=s.match(/\d{4}年\s*\d{1,2}月\s*(\d{2,5})/);
-      if(m)return m[1];
-      const m2=s.match(/月\s+(\d{2,5})/);
-      if(m2)return m2[1];
-      return '';
+    async function processUnlinkedCodes(unlinked,allPageResults){
+      showLoading('従業員一覧を取得中...');
+      const empResult=await api('getTimecardLinkableEmployees');
+      hideLoading();
+      if(!empResult.success){
+        toast(empResult.message||'従業員一覧の取得に失敗しました。');
+        timecardDebugText.textContent='エラー：'+empResult.message;
+        return;
+      }
+      const employees=empResult.data||[];
+      if(employees.length===0){
+        toast('紐づけ可能な従業員がいません。処理を中断します。');
+        timecardDebugText.textContent='紐づけ可能な従業員がいないため処理を中断しました。';
+        return;
+      }
+      for(let i=0;i<unlinked.length;i++){
+        const item=unlinked[i];
+        const selected=await showTimecardLinkModal(item.code,i+1,unlinked.length,employees);
+        if(!selected){toast('処理をキャンセルしました。');return}
+        showLoading('コードを登録中...');
+        const regResult=await api('registerTimecardCode',{code:item.code,employeeId:selected.employeeId,source:selected.source});
+        hideLoading();
+        if(!regResult.success){toast(regResult.message||'登録に失敗しました。');return}
+        toast(regResult.message);
+        allPageResults.forEach(r=>{
+          if(r.code===item.code){
+            r.name=regResult.data.name;r.company=regResult.data.company;
+            r.type=regResult.data.type;r.status='OK';
+          }
+        });
+      }
+      buildTimecardResults(allPageResults);
+      toast('PDF解析が完了しました。');
     }
 
-    function extractTimecardMonth(pageText){
-      const s=String(pageText||'');
-      const m=s.match(/(\d{4})年\s*(\d{1,2})月/);
-      if(m)return m[1]+'-'+String(m[2]).padStart(2,'0');
-      return '';
+    function showTimecardLinkModal(code,current,total,employees){
+      return new Promise((resolve)=>{
+        document.getElementById('timecardLinkModalTitle').textContent='未登録コードの紐づけ（'+current+' / '+total+'件）';
+        document.getElementById('timecardLinkNote').textContent='タイムカードコード「'+code+'」が未登録です。該当する従業員を選択してください。';
+        const select=document.getElementById('timecardLinkEmployeeSelect');
+        select.innerHTML='<option value="">選択してください</option>'+
+          employees.map(e=>`<option value="${escapeAttr(e.employeeId)}" data-source="${escapeAttr(e.source)}" data-name="${escapeAttr(e.name)}">${escapeHtml(e.name)}（${escapeHtml(e.type)}・${escapeHtml(e.company)}）</option>`).join('');
+        timecardLinkCallback=resolve;
+        document.getElementById('timecardLinkModalBackdrop').classList.add('show');
+      });
     }
 
-    function extractTimecardDepartment(pageText){
-      const s=String(pageText||'');
-      const patterns=[/三重\(([^)]+)\)/,/岩手\(([^)]+)\)/,/([^\s（(]+)\(([^)]+)\)/];
-      for(const p of patterns){const m=s.match(p);if(m)return m[0]}
-      return '';
+    function confirmTimecardLink(){
+      const select=document.getElementById('timecardLinkEmployeeSelect');
+      const option=select.selectedOptions[0];
+      if(!option||!option.value){toast('従業員を選択してください。');return}
+      document.getElementById('timecardLinkModalBackdrop').classList.remove('show');
+      if(timecardLinkCallback){
+        timecardLinkCallback({employeeId:option.value,source:option.dataset.source,name:option.dataset.name});
+        timecardLinkCallback=null;
+      }
+    }
+
+    function closeTimecardLinkModal(){
+      document.getElementById('timecardLinkModalBackdrop').classList.remove('show');
+      if(timecardLinkCallback){timecardLinkCallback(null);timecardLinkCallback=null;}
+    }
+
+    function buildTimecardResults(pageResults){
+      timecardPageResults=[];timecardCompanyGroups={};
+      const debugLines=[];
+      pageResults.forEach(r=>{
+        const info={pageNo:r.pageNo,employeeCode:r.code,name:r.name||'未取得',company:r.company,type:r.type,department:'',status:r.status};
+        timecardPageResults.push(info);
+        if(!timecardCompanyGroups[r.company])timecardCompanyGroups[r.company]=[];
+        timecardCompanyGroups[r.company].push(info);
+        debugLines.push('page '+r.pageNo+': コード='+r.code+' 氏名='+(r.name||'未取得')+' → '+r.company);
+      });
+      timecardDebugText.textContent=debugLines.join('\n');
+      renderTimecardResults();
     }
 
     function renderTimecardResults(){
@@ -296,24 +294,12 @@
       const partner=timecardPageResults.filter(r=>r.type==='協力'&&r.status==='OK').length;
       timecardTotalPages.textContent=total;timecardHumanCount.textContent=human;
       timecardPartnerCount.textContent=partner;timecardUnknownCount.textContent=unknown;
-
       if(!timecardPageResults.length){
         timecardResultBody.innerHTML='<tr><td colspan="7" class="empty">PDFを解析すると結果が表示されます。</td></tr>';
         timecardCompanyBody.innerHTML='<tr><td colspan="4" class="empty">PDF解析後に表示されます。</td></tr>';
         return;
       }
-
-      timecardResultBody.innerHTML=timecardPageResults.map(row=>`
-        <tr>
-          <td>${row.pageNo}</td>
-          <td>${escapeHtml(row.employeeCode||'')}</td>
-          <td>${escapeHtml(row.name||'未取得')}</td>
-          <td>${escapeHtml(row.company)}</td>
-          <td><span class="badge ${row.type==='協力'?'badge-teal':row.type==='未判定'?'badge-warning':'badge-blue'}">${escapeHtml(row.type)}</span></td>
-          <td>${escapeHtml(row.department||'')}</td>
-          <td><span class="badge ${row.status==='OK'?'badge-success':'badge-warning'}">${escapeHtml(row.status)}</span></td>
-        </tr>`).join('');
-
+      timecardResultBody.innerHTML=timecardPageResults.map(row=>`<tr><td>${row.pageNo}</td><td>${escapeHtml(row.employeeCode||'')}</td><td>${escapeHtml(row.name||'未取得')}</td><td>${escapeHtml(row.company)}</td><td><span class="badge ${row.type==='協力'?'badge-teal':row.type==='未判定'?'badge-warning':'badge-blue'}">${escapeHtml(row.type)}</span></td><td>${escapeHtml(row.department||'')}</td><td><span class="badge ${row.status==='OK'?'badge-success':'badge-warning'}">${escapeHtml(row.status)}</span></td></tr>`).join('');
       const companies=Object.keys(timecardCompanyGroups).sort((a,b)=>a==='HumanNexus'?-1:b==='HumanNexus'?1:a.localeCompare(b,'ja'));
       timecardCompanyBody.innerHTML=companies.map(company=>{
         const rows=timecardCompanyGroups[company]||[];
