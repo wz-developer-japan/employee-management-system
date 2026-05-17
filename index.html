@@ -115,10 +115,23 @@
       if (!s) return false;
       if (s.length < 2 || s.length > 14) return false;
 
-      const ngWords = ['三重','請負','出勤','退勤','丸め','株式会社','KING','Timecard','generated','ETCH','DDP','EPI','月','年','日','NEO','HumanNexus'];
-      for (let i = 0; i < ngWords.length; i++) {
-        if (s.indexOf(ngWords[i]) >= 0) return false;
-      }
+      if (s.indexOf('三重') >= 0) return false;
+      if (s.indexOf('請負') >= 0) return false;
+      if (s.indexOf('出勤') >= 0) return false;
+      if (s.indexOf('退勤') >= 0) return false;
+      if (s.indexOf('丸め') >= 0) return false;
+      if (s.indexOf('株式会社') >= 0) return false;
+      if (s.indexOf('KING') >= 0) return false;
+      if (s.indexOf('Timecard') >= 0) return false;
+      if (s.indexOf('generated') >= 0) return false;
+      if (s.indexOf('ETCH') >= 0) return false;
+      if (s.indexOf('DDP') >= 0) return false;
+      if (s.indexOf('EPI') >= 0) return false;
+      if (s.indexOf('月') >= 0) return false;
+      if (s.indexOf('年') >= 0) return false;
+      if (s.indexOf('日') >= 0) return false;
+      if (s.indexOf('NEO') >= 0) return false;
+      if (s.indexOf('HumanNexus') >= 0) return false;
 
       for (let i = 0; i < s.length; i++) {
         const ch = s.charAt(i);
