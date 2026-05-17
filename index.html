@@ -193,7 +193,7 @@
 
         // GASへOCR依頼
         showLoading('Google Drive OCRで氏名を読み取り中...\n（30ページで1〜3分かかります）');
-        const result=await api('timecardOcrPdf',{pdfBase64,fileName:file.name});
+        const result=await api('timecardSplit',{pdfBase64,fileName:file.name});
 
         if(!result.success){
           toast(result.message||'GAS OCRに失敗しました。');
