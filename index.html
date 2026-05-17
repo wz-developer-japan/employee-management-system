@@ -110,9 +110,57 @@
       return '';
     }
 
-    function isLikelyJapaneseName(s){if(!s)return false;const ng=['三重','請負','出勤','退勤','丸め','株式会社','KING','Timecard','generated','ETCH','DDP','EPI','月','年','日'];if(ng.some(x=>s.includes(x)))return false;let jp=0;for(const ch of s){const code=ch.charCodeAt(0);if((code>=0x3040&&code<=0x30ff)||(code>=0x4e00&&code<=0x9fff)||ch===' '||ch==='　')jp++;else return false}return jp>=2&&jp<=14}
-    function normalizeEmployeeCode(s){const digits=String(s||'').replace(/[^0-9]/g,'');if(!digits)return'';return String(Number(digits))}function normalizePersonName(s){return String(s||'').replaceAll(' ','').replaceAll('　','').replaceAll('﨑','崎').replaceAll('髙','高').replaceAll('佂','征').trim()}
-    function normalizeDisplayName(s){return String(s||'').replaceAll('　',' ').trim()}
+    function isLikelyJapaneseName(s){
+      s = String(s || '').trim();
+      if (!s) return false;
+      if (s.length < 2 || s.length > 14) return false;
+
+      const ngWords = ['三重','請負','出勤','退勤','丸め','株式会社','KING','Timecard','generated','ETCH','DDP','EPI','月','年','日','NEO','HumanNexus'];
+      for (let i = 0; i < ngWords.length; i++) {
+        if (s.indexOf(ngWords[i]) >= 0) return false;
+      }
+
+      for (let i = 0; i < s.length; i++) {
+        const ch = s.charAt(i);
+        if (ch === ' ' || ch === '　') continue;
+        if (!isJapaneseNameChar(ch)) return false;
+      }
+      return true;
+    }
+
+    function isJapaneseNameChar(ch){
+      const code = ch.charCodeAt(0);
+      if (code >= 0x3040 && code <= 0x30ff) return true;
+      if (code >= 0x4e00 && code <= 0x9fff) return true;
+      if (ch === 'ー') return true;
+      return false;
+    }
+
+    function normalizeEmployeeCode(s){
+      const raw = String(s || '');
+      let digits = '';
+      for (let i = 0; i < raw.length; i++) {
+        const ch = raw.charAt(i);
+        if (ch >= '0' && ch <= '9') digits += ch;
+      }
+      if (!digits) return '';
+      return String(Number(digits));
+    }
+
+    function normalizePersonName(s){
+      return String(s || '')
+        .replaceAll(' ', '')
+        .replaceAll('　', '')
+        .replaceAll('﨑', '崎')
+        .replaceAll('髙', '高')
+        .replaceAll('佂', '征')
+        .trim();
+    }
+
+    function normalizeDisplayName(s){
+      return String(s || '').replaceAll('　', ' ').trim();
+    }
+
     function renderTimecardResults(){const total=timecardPageResults.length;const human=timecardPageResults.filter(r=>r.company==='HumanNexus'&&r.status==='OK').length;const unknown=timecardPageResults.filter(r=>r.status!=='OK').length;const partner=timecardPageResults.filter(r=>r.type==='協力'&&r.status==='OK').length;timecardTotalPages.textContent=total;timecardHumanCount.textContent=human;timecardPartnerCount.textContent=partner;timecardUnknownCount.textContent=unknown;if(!timecardPageResults.length){timecardResultBody.innerHTML='<tr><td colspan="7" class="empty">PDFを解析すると結果が表示されます。</td></tr>';timecardCompanyBody.innerHTML='<tr><td colspan="4" class="empty">PDF解析後に表示されます。</td></tr>';return}timecardResultBody.innerHTML=timecardPageResults.map(row=>`<tr><td>${row.pageNo}</td><td>${escapeHtml(row.employeeCode||'')}</td><td>${escapeHtml(row.name||'未取得')}</td><td>${escapeHtml(row.company)}</td><td><span class="badge ${row.type==='協力'?'badge-teal':'badge-blue'}">${escapeHtml(row.type)}</span></td><td>${escapeHtml(row.department||'')}</td><td><span class="badge ${row.status==='OK'?'badge-success':'badge-warning'}">${escapeHtml(row.status)}</span></td></tr>`).join('');const companies=Object.keys(timecardCompanyGroups).sort((a,b)=>a==='HumanNexus'?-1:b==='HumanNexus'?1:a.localeCompare(b,'ja'));timecardCompanyBody.innerHTML=companies.map(company=>{const rows=timecardCompanyGroups[company]||[];const names=rows.map(r=>r.name||`ページ${r.pageNo}`).join('、');return `<tr><td>${escapeHtml(company)}</td><td>${rows.length}ページ</td><td style="white-space:normal;min-width:320px;">${escapeHtml(names)}</td><td><button class="btn btn-sm btn-primary" onclick="downloadTimecardCompanyPdf('${escapeAttr(company)}')">PDF出力</button></td></tr>`}).join('')}
     async function downloadTimecardCompanyPdf(company){if(!timecardPdfBytes){toast('先にPDFを解析してください。');return}const rows=timecardCompanyGroups[company]||[];if(!rows.length){toast('対象ページがありません。');return}showLoading();try{const src=await PDFLib.PDFDocument.load(timecardPdfBytes.slice(0));const out=await PDFLib.PDFDocument.create();const indices=rows.map(r=>r.pageNo-1);const copied=await out.copyPages(src,indices);copied.forEach(p=>out.addPage(p));const bytes=await out.save();const month=(timecardTargetMonth.value||extractMonthFromFileName(timecardOriginalFileName)||'対象月未設定').replace('-','年')+'月分';downloadBlob(new Blob([bytes],{type:'application/pdf'}),sanitizeFileName(month+'_'+company+'_タイムカード.pdf'));toast(company+' のPDFを出力しました。')}catch(e){console.error(e);toast('PDF出力でエラーが発生しました。')}finally{hideLoading()}}
     async function downloadAllTimecardSplitPdfs(){const companies=Object.keys(timecardCompanyGroups);if(!companies.length){toast('先にPDFを解析してください。');return}for(const company of companies){await downloadTimecardCompanyPdf(company)}}
